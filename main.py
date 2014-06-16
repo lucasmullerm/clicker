@@ -1,7 +1,10 @@
+## Imports
+
 import json
 import datetime
 import webapp2
 from google.appengine.ext import ndb
+
 
 ## DataBase
 
@@ -45,17 +48,25 @@ class Subscription(ndb.Model):
 	user_id = ndb.IntegerProperty(required=True)
 	group_id = ndb.IntegerProperty(required=True)
 
+class Mark(ndb.Model):
+	user_id = ndb.IntegerProperty(required=True)
+	question_id = ndb.IntegerProperty(required=True)
+	marked = ndb.IntegerProperty(required=True)
+
 
 ## Auxiliar Methods
 
-def checkUser(username, password): ##incomplete##
+def checkUser(username, password): ##incomplete#########################
 	return True or False
 
-def checkLogin(): ##incomplete##
+def checkLogin(): ##incomplete#########################
 	return ["user_id", "isProf"] or False
 
-def LogIn(username, password): ##incomplete##
+def LogIn(username, password): ##incomplete#########################
 	return ["user_id", "isProf"] or False
+
+def LogOut(): ##incomplete#########################
+	pass
 
 def existUser(username):
 	res = ndb.gql("SELECT * FROM User WHERE username = '%(username)s'"%{"username": username})
@@ -73,10 +84,16 @@ def checkLabel(label, group_id):
 	res = ndb.gql("SELECT * FROM Question WHERE label = '%(label)s' AND admin = %(group_id)s"%({"label": label, "group_id":group_id}))
 	return bool(list(res))
 
+def checkMark(user_id, question_id):
+	mark = ndb.gql("SELECT * FROM Mark WHERE user_id = %(user_id)s AND question_id = %(question_id)s" %({"user_id": user_id, "question_id": question_id}))
+	return bool(list(mark))
+
 
 ## Routes Handlers
 
-class Home(webapp2.RequestHandler):
+## imcomplete: change radio button to click
+
+class Home(webapp2.RequestHandler):## missing templates in get request
 	def get(self):
 		res = checkLogin()
 		if res:
@@ -94,23 +111,27 @@ class Home(webapp2.RequestHandler):
 			return "LOGINPAGE"
 
 	def post(self):
-		username = self.request.get('username')
-		password = self.request.get('password')
-		if not username or not password:
-			return
-
-		res = LogIn(username, password)
-
-		if res:
-			self.response.headers['Content-Type'] = 'application/json'
-			self.response.write(json.dumps({"status":True}))
-			#return "REFRESH"
+		self.response.headers['Content-Type'] = 'application/json'
+		action = self.request.get('action')
+		if action == 'logout':
+			LogOut()
+			self.response.write(json.dumps({"status":True, "redirect": True}))
 		else:
-			self.response.headers['Content-Type'] = 'application/json'
-			self.response.write(json.dumps({"status":False}))
-			#return "LOGINPAGE+ERRO" ##missing templates in get request
+			username = self.request.get('username')
+			password = self.request.get('password')
+			if not username or not password:
+				return
+	
+			res = LogIn(username, password)
+	
+			if res:
+				self.response.write(json.dumps({"status":True}))
+				#return "REFRESH"
+			else:
+				self.response.write(json.dumps({"status":False}))
+				#return "LOGINPAGE+ERRO" 
 
-class Register(webapp2.RequestHandler):
+class Register(webapp2.RequestHandler):## missing templates in get request
 	def get(self):
 		return "REGISTER PAGE"
 
@@ -130,9 +151,9 @@ class Register(webapp2.RequestHandler):
 			new_user = User(username=username, isProf=isProf, password=password)
 			new_user.put()
 			print "new user: " + str(username) + ("(prof)" if isProf else "")
-			self.response.write(json.dumps({"status": True})) ##missing templates in get request
+			self.response.write(json.dumps({"status": True})) 
 
-class ShowGroup(webapp2.RequestHandler):
+class ShowGroup(webapp2.RequestHandler):## missing templates in get request
 	def get(self):
 		res = checkLogin()
 		if res:
@@ -155,9 +176,9 @@ class ShowGroup(webapp2.RequestHandler):
 			return "LOGINPAGE"
 
 	def post(self):
-		self.error(405) ##missing templates in get request
+		self.error(405) 
 
-class AddGroup(webapp2.RequestHandler):
+class AddGroup(webapp2.RequestHandler): ## missing templates in get request
 
 	def get(self):
 		res = checkLogin()
@@ -192,9 +213,9 @@ class AddGroup(webapp2.RequestHandler):
 
 		else:
 			self.response.write(json.dumps({"status": False, "redirect": True}))
-			#return "FALSE - GOTO LOGIN" ##missing templates in get request
+			#return "FALSE - GOTO LOGIN"
 
-class AddQuestion(webapp2.RequestHandler):
+class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 	def get(self):
 		res = checkLogin()
 		if res:
@@ -233,11 +254,7 @@ class AddQuestion(webapp2.RequestHandler):
 						rb = 0
 						rc = 0
 						rd = 0
-						checka = self.request.get("checka")
-						checkb = self.request.get("checkb")
-						checkc = self.request.get("checkc")
-						checkd = self.request.get("checkd")
-						answer = 0 if checka == "True" else 1 if checkb == "True" else 2 if checkc == "True" else 3 if checkd == "True"
+						answer = int(self.request.get('marked'))
 						status = 0
 						new_question = Question(group_id=group_id, content=content, status=status, a=a, b=b, c=c, d=d, ra=0,rb=0, rc=0, rd=0, answer=answer)
 						new_question.put()
@@ -254,9 +271,11 @@ class AddQuestion(webapp2.RequestHandler):
 				#return "ERROR, only profs allowed"
 		else:
 			self.response.write(json.dumps({"status": False, "redirect": True}))
-			#return "FALSE - GOTO LOGIN" ##missing templates in get request
+			#return "FALSE - GOTO LOGIN" 
 
-class EnterGroup(webapp2.RequestHandler):
+class EnterGroup(webapp2.RequestHandler): ##missing templates in ge
+
+t request
 	def get(self):
 		res = checkLogin()
 		if res:
@@ -284,7 +303,7 @@ class EnterGroup(webapp2.RequestHandler):
 				#return "GROUP DOES NOT EXIST"
 		else:
 			sel.response.write(json.dumps({"status":False, "redirect" : True}))
-			#return "GOTO LOGIN" ##missing templates in get request
+			#return "GOTO LOGIN" 
 
 class ShowQuestion(webapp2.RequestHandler): ##incomplete
 	def get(self):
@@ -293,19 +312,17 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 			question_id = int(self.request.get("question_id"))
 			question = ndb.gql("SELECT * FROM Question WHERE question_id = %s"%(question_id)).get()
 			if res[1]:
-				if question.status == 0:
-					pass
-				elif question.status == 1:
-					pass
-				elif question.status == 2:
-					pass
+				return "SHOW QUESTION(question)(button = [start, stop, STATISTICS])"
 			else:
 				if question.status == 0:
-					pass
+					self.error(401)
 				elif question.status == 1:
-					pass
+					if not checkMark():
+						return "SHOW QUESTION READY TO ANSWER"
+					else:
+						return "GOTO GROUP"
 				elif question.status == 2:
-					pass
+					return "SHOW ANSWERED QUESTION"
 		else:
 			return "LOGINPAGE"
 
@@ -317,21 +334,31 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 			question = ndb.gql("SELECT * FROM Question WHERE question_id = %s"%(question_id)).get()
 			if res[1]:
 				if question.status == 0:
-					pass
+					question.status = 1
+					question.put()
+					self.response.write(json.dumps({"status": True}))
 				elif question.status == 1:
-					pass
+					question.status = 2
+					question.put()
+					self.response.write(json.dumps({"status": True}))
 				elif question.status == 2:
-					pass
+					self.error(400)
+					#IMPOSSIBLE TO GET HERE
 			else:
 				if question.status == 0:
-					pass
+					self.error(401)
 				elif question.status == 1:
+					marked = int(self.request.get('marked'))
+					new_mark = Mark(user_id=res[0], question_id=question.question_id, marked=marked)
+					self.response.write(json.dumps({"status": True}))
 					pass
 				elif question.status == 2:
-					pass
+					self.error(400)
+					#impossible
 		else:
 			self.response.write(json.dumps({"status": False, "redirect" : True}))
 			#return "LOGINPAGE"
+
 
 ## Main
 

@@ -1,0 +1,64 @@
+
+<html>
+<head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+    questions = function (id) {
+     window.location.href = '/questions?questions_id' + id;
+    }  
+    groups = function (id) {
+        windows.location.href = '/groups?groups_id' + id;
+    }
+    logOut = function(){
+        $.ajax({
+            type: POST,
+            url: "",
+            data: {'action': 'logout'},
+            success: function (data){
+                window.location = "http:/clickerhum.appspot.com/"
+            }
+        })
+    }   
+    </script>
+</head>
+<body>
+	<b>{{ label }}</b><br>
+	{{content}}<br>
+    <div id="a" 
+        {% if status == 1 and isProf == 0 %}
+            <script> </script>
+        {% endif %}>
+        {{ a }}
+    </div><br>
+    <div id="b" 
+        {% if status == 1 and isProf == 0 %}
+            <script> </script>
+        {% endif %}>
+        {{ b }}
+    </div><br>
+    <div id="c" 
+        {% if status == 1 and isProf == 0 %}
+            <script> </script>
+        {% endif %}>
+        {{ c }}
+    </div><br>
+    <div id="d" 
+        {% if status == 1 and isProf == 0 %}
+            <script> </script>
+        {% endif %}>
+        {{ d }}
+    </div><br>
+    {% if isProf and status == 0 %}
+        <div>Enviar</div>
+    {% endif %}
+    {% if isProf and status == 1 %}
+        <div>Fechar</div>
+    {% endif %}
+    {% if isProf and status == 2 %}
+        <div>Estatísticas</div>
+    {% endif %}
+    <div id="back" href="http:/clickerhum.appspot.com/"> 
+        Voltar
+    </div>
+</body>
+</html>

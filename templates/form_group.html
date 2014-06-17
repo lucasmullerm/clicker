@@ -1,37 +1,42 @@
+name
+description
+
+
 
 <!DOCTYPE html>
 <html>
 <head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-
     <script>
     questions = function (id) {
-        window.location.href = '/questions?questions_id' + id;
-    }
+     window.location.href = '/questions?questions_id' + id;
+    }  
     groups = function (id) {
         windows.location.href = '/groups?groups_id' + id;
     }
     logOut = function(){
-        $.ajax({ 
+        $.ajax({
             type: POST,
             url: "",
             data: {'action': 'logout'},
             success: function (data){
                 window.location = "http:/clickerhum.appspot.com/"
             }
-        })	
+        })
+    }   
+    back = function () {
+
     }
     </script>
-    <b>{{ name }}</b>
 </head>
 <body>
-    {{ description }} <br>
-    {% for question in questions %}
-        <div id={{ question[1] }} onclick="questions({{ question[1] }})">
-            {{ question[0] }}
-        </div>
-    {% endfor %}
-    <div id="logou" href="http:/clickerhum.appspot.com/"> 
+	<b>Grupo</b>
+	<form id="form">
+   		Nome: <input type="text" name="name"><br>
+   		Descrição: <input type="text" name="description"><br>
+    	<input type="submit" value="Enviar">
+	</form>
+    <div id="back" href="http:/clickerhum.appspot.com/"> 
         Voltar
     </div>
 </body>

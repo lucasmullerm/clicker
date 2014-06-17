@@ -25,9 +25,9 @@
         Adicionar Questão
     </a><br><br>
     {% for question in questions %}
-        <div id={{ question[1] }} href="/question?question_id={{question[1]}}">
+        <a id={{ question[1] }} href="/question?question_id={{question[1]}}">
             {{ question[0] }}
-        </div><br>
+        </a><br>
     {% endfor %}
     <a id="logout" href="/"> 
         Voltar

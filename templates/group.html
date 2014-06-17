@@ -21,9 +21,11 @@
 </head>
 <body>
     {{ description }} <br>
+    {% if isProf %}
     <a name="criar_questao" href="/addQuestion?group_id={{group_id}}">
         Adicionar Questão
     </a><br><br>
+    {% endif %}
     {% for question in questions %}
         <a id={{ question[1] }} href="/question?question_id={{question[1]}}">
             {{ question[0] }}

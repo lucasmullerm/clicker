@@ -24,15 +24,24 @@
     <input type="submit" name="b" value="{{b}}"><br> 
     <input type="submit" name="c" value="{{c}}"><br> 
     <input type="submit" name="d" value="{{d}}"><br> 
+    {% else %}
+    {{a}}<br>
+    {{b}}<br>
+    {{c}}<br>
+    {{d}}<br>
     {% endif %}
     {% if isProf and status == 0 %}
-        <input>Enviar</input>
+        <input type="submit" name="enviar" vaSlue="Enviar">
     {% endif %}
     {% if isProf and status == 1 %}
-        <input>Fechar</input>
+        <input type="submit" name="fechar" value="Fechar">
     {% endif %}
     {% if isProf and status == 2 %}
-        <input>Estatísticas</input>
+        Número de Respostas: {{ra + rb + rc + rd}}<br>
+        {% if answer == 0 %}<b>{% endif %}A: {{ra}} ({{ra/(ra + rb + rc + rd)}}){% if answer == 0 %}</b>{% endif %}<br>
+        {% if answer == 1 %}<b>{% endif %}B: {{rb}} ({{rb/(ra + rb + rc + rd)}}){% if answer == 1 %}</b>{% endif %}<br>
+        {% if answer == 2 %}<b>{% endif %}C: {{rc}} ({{rc/(ra + rb + rc + rd)}}){% if answer == 2 %}</b>{% endif %}<br>
+        {% if answer == 3 %}<b>{% endif %}D: {{rd}} ({{rd/(ra + rb + rc + rd)}}){% if answer == 3 %}</b>{% endif %}<br>
     {% endif %}
 </form>
     <a id="back" href="/"> 

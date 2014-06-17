@@ -19,7 +19,7 @@
 	<b>{{ label }}</b><br>
 	{{content}}<br>
     <form method="post">
-    {% if status == 1 and isProf == 0 %}
+    {% if status == 1 and isProf == 0 done == 0 %}
     <input type="submit" name="a" value="{{a}}"><br>
     <input type="submit" name="b" value="{{b}}"><br> 
     <input type="submit" name="c" value="{{c}}"><br> 
@@ -45,7 +45,7 @@
             {% if answer == 3 %}<b>{% endif %}D: {{rd}} ({{rd/(ra + rb + rc + rd)}}){% if answer == 3 %}</b>{% endif %}<br>
         {% endif %}
     {% endif %}
-</form>
+    </form>
     <a id="back" href="/"> 
         Voltar
     </a>

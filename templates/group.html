@@ -17,14 +17,17 @@
         })	
     }
     </script>
-    <b>{{ name }}</b>
+    <b>{{ name }}</b><br>
 </head>
 <body>
     {{ description }} <br>
+    <a name="criar_grupo" href="/add">
+        Criar Grupo
+    </a><br><br>
     {% for question in questions %}
         <div id={{ question[1] }} href="/question?question_id={{question[1]}}">
             {{ question[0] }}
-        </div>
+        </div><br>
     {% endfor %}
     <a id="logout" href="/"> 
         Voltar

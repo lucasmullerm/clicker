@@ -19,7 +19,7 @@
 	<b>{{ label }}</b><br>
 	{{content}}<br>
     <form method="post">
-    {% if status == 1 and isProf == 0 done == 0 %}
+    {% if status == 1 and isProf == 0 and done == 0 %}
     <input type="submit" name="a" value="{{a}}"><br>
     <input type="submit" name="b" value="{{b}}"><br> 
     <input type="submit" name="c" value="{{c}}"><br> 

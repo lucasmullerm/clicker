@@ -93,7 +93,6 @@ class User(ndb.Model):
             return u
 
 class Group(ndb.Model):
-	group_id = ndb.IntegerProperty(auto_now_add=True)
 	name = ndb.StringProperty(required=True)
 	admin = ndb.IntegerProperty(required=True)
 	description = ndb.TextProperty(required=True)
@@ -103,7 +102,6 @@ class Group(ndb.Model):
         return Group.get_by_id(gid, parent = groups_key())
 
 class Question(ndb.Model):
-	question_id = ndb.IntegerProperty(auto_now_add=True)
 	group_id = ndb.IntegerProperty(required=True)
 	content = ndb.TextProperty(required=True)
 	status = ndb.IntegerProperty(required=True)
@@ -165,11 +163,11 @@ def checkGroup(name):
 	return bool(list(res))
 
 def checkAdmin(user_id, group_id):
-	res = ndb.gql("SELECT * FROM Group WHERE group_id = %(group_id)s AND admin = %(user_id)s"%({"group_id":group_id, "user_id":user_id}))
-	return bool(list(res))
+	group = Group.by_id(group_id)
+	return group.admin == user_id
 
 def checkLabel(label, group_id):
-	res = ndb.gql("SELECT * FROM Question WHERE label = '%(label)s' AND admin = %(group_id)s"%({"label": label, "group_id":group_id}))
+	res = ndb.gql("SELECT * FROM Question WHERE label = '%(label)s' AND group_id = %(group_id)s"%({"label": label, "group_id":group_id}))
 	return bool(list(res))
 
 def checkMark(user_id, question_id):
@@ -191,8 +189,9 @@ class Home(LoginHandler):## missing templates in get request
 				return "PROFPAGE(groups)"
 			else:
 				subs = ndb.gql("SELECT * FROM Subscription WHERE user_id = %s"%(res[0]))
-				subs = tuple(s.group_id for s in subs)
-				query = ndb.gql("SELECT * FROM Group WHERE group_id IN %s"%(subs))
+				query = []
+				for s in subs:
+					query.append(Group.by_id(s.group_id))
 				groups = [(g.name, g.group_id) for g in query]
 				return "ALUNOPAGE(groups)"
 		else:
@@ -249,8 +248,8 @@ class ShowGroup(LoginHandler):## missing templates in get request
 			if res[1]:
 				group_id = int(self.request.get("group_id"))
 				questions = ndb.gql("SELECT * FROM Question WHERE group_id = %(group_id)s"%{"group_id": group_id})
-				questions= [{"question_id": q.question_id, "content": q.content, "label" : q.label, "answers":q.answers} for q in questions]
-				group = ndb.gql("SELECT * FROM Group WHERE group_id = %(group_id)s"%{"group_id": group_id})
+				questions= [{"question_id": q.key().id(), "content": q.content, "label" : q.label, "answers":q.answers} for q in questions]
+				group = Group.by_id(group_id)
 				description = group.description
 				if checkAdmin(res[0], group_id):
 					return "ADD QUESTION FORM PAGE (description, questions)"
@@ -310,7 +309,7 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 		if res:
 			if res[1]:
 				group_id = int(self.request.get("group_id"))
-				group = ndb.gql("SELECT * FROM Group WHERE group_id = %s"%(group_id))
+				group = Group.by_id(group_id)
 				name = group.name
 				if checkAdmin(res[0], group_id):
 					return "ADD QUESTION FORM PAGE (name, group_id)"
@@ -397,7 +396,7 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 		res = checkLogin()
 		if res:
 			question_id = int(self.request.get("question_id"))
-			question = ndb.gql("SELECT * FROM Question WHERE question_id = %s"%(question_id)).get()
+			question = Question.by_id(question_id)
 			if res[1]:
 				return "SHOW QUESTION(question)(button = [start, stop, STATISTICS])"
 			else:
@@ -418,7 +417,7 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 		self.response.headers['Content-Type'] = 'application/json'
 		if res:
 			question_id = int(self.request.get("question_id"))
-			question = ndb.gql("SELECT * FROM Question WHERE question_id = %s"%(question_id)).get()
+			question = Question.by_id(question_id)
 			if res[1]:
 				if question.status == 0:
 					question.status = 1
@@ -436,7 +435,7 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 					self.error(401)
 				elif question.status == 1:
 					marked = int(self.request.get('marked'))
-					new_mark = Mark(user_id=res[0], question_id=question.question_id, marked=marked)
+					new_mark = Mark(user_id=res[0], question_id=question.key().id(), marked=marked)
 					self.response.write(json.dumps({"status": True}))
 					pass
 				elif question.status == 2:

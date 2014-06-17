@@ -210,7 +210,7 @@ class Home(LoginHandler):## missing templates in get request
 				query = db.GqlQuery("SELECT * FROM Group WHERE admin = %s"%(res[0]))
 				groups = [(g.name, g.key().id()) for g in query]
 				#return "PROFPAGE(groups)"
-				self.render('home.html', groups=groups, isProf=isProf)
+				self.render('home.html', groups=groups, isProf=res[1])
 			else:
 				subs = db.GqlQuery("SELECT * FROM Subscription WHERE user_id = %s"%(res[0]))
 				query = []
@@ -218,7 +218,7 @@ class Home(LoginHandler):## missing templates in get request
 					query.append(Group.by_id(s.group_id))
 				groups = [(g.name, g.key().id()) for g in query]
 				#return "ALUNOPAGE(groups)"
-				self.render('home.html', groups=groups, isProf=isProf)
+				self.render('home.html', groups=groups, isProf=res[1])
 		else:
 			#return "LOGINPAGE"
 			self.render('login.html')
@@ -381,6 +381,8 @@ class AddQuestion(LoginHandler):## missing templates in get request
 						status = 0
 						new_question = Question(label=label, group_id=group_id, content=content, status=status, a=a, b=b, c=c, d=d, ra=0,rb=0, rc=0, rd=0, answer=answer)
 						new_question.put()
+						for i in range(1000000): #sleep
+							pass
 						self.redirect('group?group_id=' + str(group_id))
 						#return "TRUE + go to group_id"
 					else:
@@ -461,7 +463,6 @@ class ShowQuestion(LoginHandler): ##incomplete
 
 	def post(self):
 		res = checkLogin(self)
-		self.response.headers['Content-Type'] = 'application/json'
 		if res:
 			question_id = int(self.request.get("question_id"))
 			question = Question.by_id(question_id)
@@ -469,11 +470,12 @@ class ShowQuestion(LoginHandler): ##incomplete
 				if question.status == 0:
 					question.status = 1
 					question.put()
-					self.response.write(json.dumps({"status": True}))
+					self.redirect("/question?question_id=" + str(question_id))
 				elif question.status == 1:
 					question.status = 2
 					question.put()
-					self.response.write(json.dumps({"status": True}))
+					self.redirect("/question?question_id=" + str(question_id))
+					
 				elif question.status == 2:
 					self.error(400)
 					#IMPOSSIBLE TO GET HERE
@@ -483,7 +485,7 @@ class ShowQuestion(LoginHandler): ##incomplete
 				elif question.status == 1:
 					marked = int(self.request.get('marked'))
 					new_mark = Mark(user_id=res[0], question_id=question.key().id(), marked=marked)
-					self.response.write(json.dumps({"status": True}))
+					self.redirect("/question?question_id=" + str(question_id))
 					pass
 				elif question.status == 2:
 					self.error(400)

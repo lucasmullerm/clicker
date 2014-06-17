@@ -279,7 +279,7 @@ class ShowGroup(LoginHandler):## missing templates in get request
 				description = group.description
 				name = group.name
 				if checkAdmin(res[0], group_id):
-					return self.render('formquestion.html', description = description, groups = groups)
+					return self.render('group.html', description = description, name = name, questions = questions)
 				else:
 					self.error(401)
 					#return "GROUP BELONGS TO OTHER USER"
@@ -288,7 +288,8 @@ class ShowGroup(LoginHandler):## missing templates in get request
 				#return "NOT PROFESSOR"
 
 		else:
-			return "LOGINPAGE"
+			self.redirect('/')
+			#return "LOGINPAGE"
 
 	def post(self):
 		self.error(405) 
@@ -299,12 +300,14 @@ class AddGroup(LoginHandler): ## missing templates in get request
 		res = checkLogin(self)
 		if res:
 			if res[1]:
-				return "ADD GROUP FORM PAGE"
+				self.render('form_group.html')
+				#return "ADD GROUP FORM PAGE"
 			else:
 				self.error(401)
 				#return "STUDENT CANNOT ADD GROUP"
 		else:
-			return "LOGINPAGE"
+			self.redirect('/')
+			#return "LOGINPAGE"
 
 	def post(self):
 		res = checkLogin(self)
@@ -313,20 +316,19 @@ class AddGroup(LoginHandler): ## missing templates in get request
 				name = self.request.get("name")
 				description = self.request.get("description")
 				#admin = self.request.get("admin")
-				if not checkGroup():
+				if not checkGroup(name):
 					new_group = Group(name=name, description=description, admin=res[0])
 					new_group.put()
 					self.redirect('/')
 					#return "TRUE + goto home"
 				else:
-					self.redirect("/add")
+					self.redirect("/add_group")
 					#return "FALSE + ja existe nome de grupo"
 			else:
 				self.error(401)
 				#return "ERROR, only profs allowed"
-
 		else:
-			self.response.write(json.dumps({"status": False, "redirect": True}))
+			self.redirect('/')
 			#return "FALSE - GOTO LOGIN"
 
 class AddQuestion(webapp2.RequestHandler):## missing templates in get request
@@ -338,7 +340,8 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 				group = Group.by_id(group_id)
 				name = group.name
 				if checkAdmin(res[0], group_id):
-					return "ADD QUESTION FORM PAGE (name, group_id)"
+					self.render('form_question.html', group_id=group_id)
+					#return "ADD QUESTION FORM PAGE (name, group_id)"
 				else:
 					self.error(401)
 					#return "GROUP BELONGS TO OTHER USER"
@@ -347,11 +350,11 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 				#return "ERROR, only profs allowed"
 
 		else:
-			return "LOGINPAGE"
+			self.redirect('/')
+			#return "LOGINPAGE"
 
 	def post(self):
 		res = checkLogin(self)
-		self.response.headers['Content-Type'] = 'application/json'
 		if res:
 			if res[1]:
 				if checkAdmin(res[0], group_id):
@@ -359,7 +362,7 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 					group_id = int(self.request.get("group_id"))
 					if not checkLabel(label, group_id):
 						content = self.request.get("content")
-						answers = self.request.get("answers")
+						answer = self.request.get("answer")
 						a = self.request.get("a")
 						b = self.request.get("b")
 						c = self.request.get("c")
@@ -368,14 +371,13 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 						rb = 0
 						rc = 0
 						rd = 0
-						answer = int(self.request.get('marked'))
 						status = 0
 						new_question = Question(group_id=group_id, content=content, status=status, a=a, b=b, c=c, d=d, ra=0,rb=0, rc=0, rd=0, answer=answer)
 						new_question.put()
-						self.response.write(json.dumps({"status" : True}))
+						self.redirect('group?group_id=' + str(group_id))
 						#return "TRUE + go to group_id"
 					else:
-						self.response.write(json.dumps({"status": False, "redirect": False}))
+						self.redirect('add_question')
 						#return "FALSE + ja existe essa label no grupo"
 				else:
 					self.error(401)
@@ -384,7 +386,7 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 				self.error(401)
 				#return "ERROR, only profs allowed"
 		else:
-			self.response.write(json.dumps({"status": False, "redirect": True}))
+			self.redirect('/')
 			#return "FALSE - GOTO LOGIN" 
 
 class EnterGroup(webapp2.RequestHandler): ##missing templates in get request
@@ -414,7 +416,7 @@ class EnterGroup(webapp2.RequestHandler): ##missing templates in get request
 				self.response.write(json.dumps({"status": False, "redirect" : False}))
 				#return "GROUP DOES NOT EXIST"
 		else:
-			sel.response.write(json.dumps({"status":False, "redirect" : True}))
+			self.redirect('/')
 			#return "GOTO LOGIN" 
 
 class ShowQuestion(webapp2.RequestHandler): ##incomplete
@@ -423,9 +425,22 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 		if res:
 			question_id = int(self.request.get("question_id"))
 			question = Question.by_id(question_id)
+			label = question.label
+			a = question.a
+			b = question.b
+			c = question.c
+			d = question.d
+			ra = question.ra
+			rb = question.rb
+			rc = question.rc
+			rd = question.rd
+			status = question.status
+			answer = question.answer
+			content = question.content
 
 			if res[1]:
-				return "SHOW QUESTION(question)(button = [start, stop, STATISTICS])"
+				self.render('question.html', isProf=res[1] answer=answer label=label, content=content, a=a, b=b, c=c, d=d, ra=ra, rb=rb, rc=rc, rd=rd, status=status, )
+				#return "SHOW QUESTION(question)(button = [start, stop, STATISTICS])"
 			else:
 				if question.status == 0:
 					self.error(401)
@@ -433,11 +448,13 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 					if not checkMark():
 						return "SHOW QUESTION READY TO ANSWER"
 					else:
-						return "GOTO GROUP"
+						self.redirect('/group')
+						#return "GOTO GROUP"
 				elif question.status == 2:
 					return "SHOW ANSWERED QUESTION"
 		else:
-			return "LOGINPAGE"
+			self.redirect('/')
+			#return "LOGINPAGE"
 
 	def post(self):
 		res = checkLogin(self)
@@ -469,7 +486,7 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 					self.error(400)
 					#impossible
 		else:
-			self.response.write(json.dumps({"status": False, "redirect" : True}))
+			self.redirect('/')
 			#return "LOGINPAGE"
 
 

@@ -21,7 +21,7 @@
     <form method="post">
     {% for group in groups %}
         <input name="group_id" type="submit" id="{{group[1]}}" href="/group?group_id={{group[1]}}" value="{{group[0]}}">
-            
+        <br>
     {% endfor %}
     </form>
     <a id="back" href="/"> 

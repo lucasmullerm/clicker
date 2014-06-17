@@ -306,7 +306,6 @@ class AddGroup(LoginHandler): ## missing templates in get request
 
 	def post(self):
 		res = checkLogin(self)
-		self.response.headers['Content-Type'] = 'application/json'
 		if res:
 			if res[1]:
 				name = self.request.get("name")
@@ -315,10 +314,10 @@ class AddGroup(LoginHandler): ## missing templates in get request
 				if not checkGroup():
 					new_group = Group(name=name, description=description, admin=res[0])
 					new_group.put()
-					self.response.write(json.dumps({"status": True}))
-					#return "TRUE + goto groups"
+					self.redirect('/')
+					#return "TRUE + goto home"
 				else:
-					self.response.write(json.dumps({"status": False, "redirect": False}))
+					self.redirect("/add")
 					#return "FALSE + ja existe nome de grupo"
 			else:
 				self.error(401)

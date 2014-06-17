@@ -210,7 +210,7 @@ class Home(LoginHandler):## missing templates in get request
 				query = db.GqlQuery("SELECT * FROM Group WHERE admin = %s"%(res[0]))
 				groups = [(g.name, g.key().id()) for g in query]
 				#return "PROFPAGE(groups)"
-				self.render('home.html', groups=groups, isProf=isProf)
+				self.render('home.html', groups=groups, isProf=res[1])
 			else:
 				subs = db.GqlQuery("SELECT * FROM Subscription WHERE user_id = %s"%(res[0]))
 				query = []
@@ -218,7 +218,7 @@ class Home(LoginHandler):## missing templates in get request
 					query.append(Group.by_id(s.group_id))
 				groups = [(g.name, g.key().id()) for g in query]
 				#return "ALUNOPAGE(groups)"
-				self.render('home.html', groups=groups, isProf=isProf)
+				self.render('home.html', groups=groups, isProf=res[1])
 		else:
 			#return "LOGINPAGE"
 			self.render('login.html')

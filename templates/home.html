@@ -20,11 +20,12 @@
 <body>
     <a name="criar_grupo" href="/add">
         Criar Grupo
-    </a>
+    </a><br>
     {% for group in groups %}
         <a id="{{group[1]}}" href="/group?group_id={{group[1]}}">
             {{ group[0] }}
         </a>
+        <br>
     {% endfor %}
     <form method="post">
     <input id="logout" url="" name="action" type="submit" value="Sair"> 

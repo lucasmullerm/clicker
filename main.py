@@ -397,24 +397,24 @@ class EnterGroup(webapp2.RequestHandler): ##missing templates in get request
 				self.error(401)
 				#return "PAGE FOR STUDENTS"
 			else:
-				return "FORM FOR INPUT GROUP NAME"
+				query = db.GqlQuery("SELECT * FROM Group")
+				groups = [(g.name, g.group_id) for g in query]
+				self.render('get_group.html', groups)
+				#return "FORM FOR INPUT GROUP NAME"
 		else:
-			return "LOGINPAGE"
+			self.redirect('/')
+			#return "LOGINPAGE"
 
 	def post(self):
 		res = checkLogin(self)
-		self.response.headers['Content-Type'] = 'application/json'
 		if res:
-			name = self.request.get("name")
-			group = db.GqlQuery("SELECT * FROM Group WHERE name = '%s'"%(name)).get()
-			if group:
-				new_sub = Subscription(group_id=group.key().id(), user_id=res[0])
-				new_sub.put()
-				self.response.write(json.dumps({"status": True}))
-				#return "TRUE GO BACK"
-			else:
-				self.response.write(json.dumps({"status": False, "redirect" : False}))
-				#return "GROUP DOES NOT EXIST"
+			group_id = int(self.request.get("group_id"))
+			group = Group.by_id(group_id)
+			new_sub = Subscription(group_id=group.key().id(), user_id=res[0])
+			new_sub.put()
+			self.redirect('/')
+			#return "TRUE GO BACK"
+			
 		else:
 			self.redirect('/')
 			#return "GOTO LOGIN" 
@@ -439,7 +439,7 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 			content = question.content
 
 			if res[1]:
-				self.render('question.html', isProf=res[1] answer=answer label=label, content=content, a=a, b=b, c=c, d=d, ra=ra, rb=rb, rc=rc, rd=rd, status=status, )
+				self.render('question.html', isProf=res[1], answer=answer, label=label, content=content, a=a, b=b, c=c, d=d, ra=ra, rb=rb, rc=rc, rd=rd, status=status)
 				#return "SHOW QUESTION(question)(button = [start, stop, STATISTICS])"
 			else:
 				if question.status == 0:

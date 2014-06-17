@@ -8,17 +8,99 @@ from google.appengine.ext import ndb
 
 ## DataBase
 
+class LoginHandler(webapp2.RequestHandler):
+    def set_secure_cookie(self, name, val):
+        cookie_val = make_secure_val(val)
+        self.response.headers.add_header(
+            'Set-Cookie',
+            '%s=%s; Path=/' % (name, cookie_val))
+
+    def read_secure_cookie(self, name):
+        cookie_val = self.request.cookies.get(name)
+        return cookie_val and check_secure_val(cookie_val)
+
+    def login(self, user):
+        self.set_secure_cookie('user_id', str(user.key().id()))
+
+    def logout(self):
+        self.response.delete_cookie('user_id')
+
+    def initialize(self, *a, **kw):
+        webapp2.RequestHandler.initialize(self, *a, **kw)
+        uid = self.read_secure_cookie('user_id')
+        self.user = uid and User.by_id(int(uid))
+
+SECRET = "muller3e3305d5c94558muts173dc874c366081abrailee9f64756631feb6932"
+
+def make_secure_val(s):
+        return "%s|%s" % (s, hmac.new(SECRET, s).hexdigest())
+
+def check_secure_val(h):
+        val = h.split('|')[0]
+        if h == make_secure_val(val):
+                return val
+
+def make_salt():
+    return ''.join(random.choice(string.letters) for x in xrange(5))
+
+def make_pw_hash(name, pw, salt=None):
+    if not salt:
+        salt=make_salt()
+    h = hashlib.sha256(name + pw + salt).hexdigest()
+    return '%s,%s' % (h, salt)
+
+def valid_pw(name, pw, h):
+    salt = h.split(',')[1]
+    return h == make_pw_hash(name, pw, salt)
+
+def users_key(group = 'default'):
+    return db.Key.from_path('users', group)
+
+def groups_key(group = 'default'):
+    return db.Key.from_path('groups', group)
+
+def questions_key(group = 'default'):
+    return db.Key.from_path('questions', group)
+
 class User(ndb.Model):
-	user_id = ndb.IntegerProperty(auto_now_add=True)
-	username = ndb.StringProperty(required=True)
-	password = ndb.StringProperty(required=True)
-	isProf = ndb.BooleanProperty(required=True)
+    username    = ndb.StringProperty(required = True)
+    pw_hash = ndb.StringProperty(required = True)
+    email = ndb.StringProperty()
+    isProf  = ndb.BooleanProperty(required = True)
+
+    @classmethod
+    def by_id(cls, uid):
+        return User.get_by_id(uid, parent = users_key())
+
+    @classmethod
+    def by_name(cls, username):
+        u = User.all().filter('username =', username).get()
+        return u
+
+    @classmethod
+    def register(cls, username, pw, isProf, email = None):
+        pw_hash = make_pw_hash(name, pw)
+        return User(parent = users_key(),
+                    username = username,
+                    pw_hash = pw_hash,
+                    isProf = isProf,
+                    email = email)
+
+    @classmethod
+    def login(cls, name, pw):
+        u = cls.by_name(name)
+        if u and valid_pw(username, pw, u.pw_hash):
+            return u
 
 class Group(ndb.Model):
 	group_id = ndb.IntegerProperty(auto_now_add=True)
 	name = ndb.StringProperty(required=True)
 	admin = ndb.IntegerProperty(required=True)
 	description = ndb.TextProperty(required=True)
+
+	@classmethod
+    def by_id(cls, gid):
+        return Group.get_by_id(gid, parent = groups_key())
 
 class Question(ndb.Model):
 	question_id = ndb.IntegerProperty(auto_now_add=True)
@@ -44,6 +126,9 @@ class Question(ndb.Model):
 	### 0 - a, 1 - b, 2 - c, 3 - d
 	###
 
+	def by_id(cls, qid):
+        return Question.get_by_id(qid, parent = questions_key())
+
 class Subscription(ndb.Model):
 	user_id = ndb.IntegerProperty(required=True)
 	group_id = ndb.IntegerProperty(required=True)
@@ -56,17 +141,20 @@ class Mark(ndb.Model):
 
 ## Auxiliar Methods
 
-def checkUser(username, password): ##incomplete#########################
-	return True or False
+def checkLogin(handler): ##incomplete#########################
+	if handler.user:
+		user_id = int(user)
+		isProf = user.isProf
+		return [user_id, isProf]
 
-def checkLogin(): ##incomplete#########################
-	return ["user_id", "isProf"] or False
+def LogIn(handler, username, password): ##incomplete#########################
+	u = User.login(username, password)
+    if u:
+        handler.login(u)
+        return ["user_id", "isProf"]
+    else:
+      	return False
 
-def LogIn(username, password): ##incomplete#########################
-	return ["user_id", "isProf"] or False
-
-def LogOut(): ##incomplete#########################
-	pass
 
 def existUser(username):
 	res = ndb.gql("SELECT * FROM User WHERE username = '%(username)s'"%{"username": username})
@@ -93,7 +181,7 @@ def checkMark(user_id, question_id):
 
 ## imcomplete: change radio button to click
 
-class Home(webapp2.RequestHandler):## missing templates in get request
+class Home(LoginHandler):## missing templates in get request
 	def get(self):
 		res = checkLogin()
 		if res:
@@ -114,7 +202,7 @@ class Home(webapp2.RequestHandler):## missing templates in get request
 		self.response.headers['Content-Type'] = 'application/json'
 		action = self.request.get('action')
 		if action == 'logout':
-			LogOut()
+			self.logout()
 			self.response.write(json.dumps({"status":True, "redirect": True}))
 		else:
 			username = self.request.get('username')
@@ -131,7 +219,7 @@ class Home(webapp2.RequestHandler):## missing templates in get request
 				self.response.write(json.dumps({"status":False}))
 				#return "LOGINPAGE+ERRO" 
 
-class Register(webapp2.RequestHandler):## missing templates in get request
+class Register(LoginHandler):## missing templates in get request
 	def get(self):
 		return "REGISTER PAGE"
 
@@ -148,12 +236,13 @@ class Register(webapp2.RequestHandler):## missing templates in get request
 			self.response.write(json.dumps({"status": False}))
 		else:
 			##change password for hash
-			new_user = User(username=username, isProf=isProf, password=password)
-			new_user.put()
+			u = User.register(username, password, email = "", isProf)
+            u.put()
+            self.login(u)
 			print "new user: " + str(username) + ("(prof)" if isProf else "")
 			self.response.write(json.dumps({"status": True})) 
 
-class ShowGroup(webapp2.RequestHandler):## missing templates in get request
+class ShowGroup(LoginHandler):## missing templates in get request
 	def get(self):
 		res = checkLogin()
 		if res:
@@ -178,7 +267,7 @@ class ShowGroup(webapp2.RequestHandler):## missing templates in get request
 	def post(self):
 		self.error(405) 
 
-class AddGroup(webapp2.RequestHandler): ## missing templates in get request
+class AddGroup(LoginHandler): ## missing templates in get request
 
 	def get(self):
 		res = checkLogin()

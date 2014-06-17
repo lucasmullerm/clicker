@@ -235,7 +235,7 @@ class Home(LoginHandler):## missing templates in get request
 			username = self.request.get('username')
 			password = self.request.get('password')
 			if not username or not password:
-				return
+				self.redirect('/')
 	
 			res = LogIn(self, username, password)
 	
@@ -432,7 +432,7 @@ class EnterGroup(LoginHandler): ##missing templates in get request
 		if res:
 			group_id = int(self.request.get("group_id"))
 			group = Group.by_id(group_id)
-			new_sub = Subscription(group_id=group.key().id(), user_id=res[0])
+			new_sub = Subscription(group_id=group_id, user_id=res[0])
 			new_sub.put()
 			self.redirect('/')
 			#return "TRUE GO BACK"

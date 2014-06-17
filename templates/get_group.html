@@ -18,13 +18,13 @@
     </script>
 </head>
 <body>
-    <form method="post">
     {% for group in groups %}
+    <form method="post">
         <input name="name" type="submit" id="{{group[1]}}" href="/group?group_id={{group[1]}}" value="{{group[0]}}">
         <input name="group_id" type="hidden" value="{{group[1]}}">
         <br>
-    {% endfor %}
     </form>
+    {% endfor %}
     <a id="back" href="/"> 
         Voltar
     </a>

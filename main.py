@@ -189,6 +189,10 @@ def checkAdmin(user_id, group_id):
 	group = Group.by_id(group_id)
 	return group.admin == user_id
 
+def checkSubscription(user_id, group_id):
+	subs = db.GqlQuery("SELECT * FROM Subscription WHERE user_id = %(user_id)s AND group_id = %(group_id)s" %({"user_id": user_id, "group_id": group_id}))
+	return bool(list(subs))
+
 def checkLabel(label, group_id):
 	res = db.GqlQuery("SELECT * FROM Question WHERE label = '%(label)s' AND group_id = %(group_id)s"%({"label": label, "group_id":group_id}))
 	return bool(list(res))
@@ -283,12 +287,20 @@ class ShowGroup(LoginHandler):## missing templates in get request
 				description = group.description
 				name = group.name
 				if checkAdmin(res[0], group_id):
-					return self.render('group.html', description = description, name = name, questions = questions, group_id=group_id)
+					return self.render('group.html', description = description, name = name, questions = questions, group_id=group_id, isProf=res[1])
 				else:
 					self.error(401)
 					#return "GROUP BELONGS TO OTHER USER"
 			else:
-				self.error(401)
+				group_id = int(self.request.get("group_id"))
+				questions = db.GqlQuery("SELECT * FROM Question WHERE group_id = %(group_id)s AND status = 1"%{"group_id": group_id})
+				questions= [(q.label, q.key().id()) for q in questions]
+				group = Group.by_id(group_id)
+				#group = db.GqlQuery("SELECT * FROM Group where __key__ = KEY('Group', %s)"%(group_id)).get()
+				description = group.description
+				name = group.name
+				if checkSubscription(res[0], group_id):
+					return self.render('group.html', description = description, name = name, questions = questions, group_id=group_id, isProf=res[1])
 				#return "NOT PROFESSOR"
 
 		else:

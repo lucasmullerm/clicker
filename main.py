@@ -210,7 +210,7 @@ class Home(LoginHandler):## missing templates in get request
 				query = db.GqlQuery("SELECT * FROM Group WHERE admin = %s"%(res[0]))
 				groups = [(g.name, g.key().id()) for g in query]
 				#return "PROFPAGE(groups)"
-				self.render('home.html', groups=groups)
+				self.render('home.html', groups=groups, isProf=isProf)
 			else:
 				subs = db.GqlQuery("SELECT * FROM Subscription WHERE user_id = %s"%(res[0]))
 				query = []
@@ -218,7 +218,7 @@ class Home(LoginHandler):## missing templates in get request
 					query.append(Group.by_id(s.group_id))
 				groups = [(g.name, g.key().id()) for g in query]
 				#return "ALUNOPAGE(groups)"
-				self.render('home.html', groups=groups)
+				self.render('home.html', groups=groups, isProf=isProf)
 		else:
 			#return "LOGINPAGE"
 			self.render('login.html')
@@ -405,8 +405,8 @@ class EnterGroup(LoginHandler): ##missing templates in get request
 				#return "PAGE FOR STUDENTS"
 			else:
 				query = db.GqlQuery("SELECT * FROM Group")
-				groups = [(g.name, g.group_id) for g in query]
-				self.render('get_group.html', groups)
+				groups = [(g.name, g.key().id()) for g in query]
+				self.render('get_group.html', groups=groups)
 				#return "FORM FOR INPUT GROUP NAME"
 		else:
 			self.redirect('/')
@@ -451,14 +451,10 @@ class ShowQuestion(LoginHandler): ##incomplete
 			else:
 				if question.status == 0:
 					self.error(401)
-				elif question.status == 1: 	
-					if not checkMark():
-						return "SHOW QUESTION READY TO ANSWER"
-					else:
-						self.redirect('/group')
-						#return "GOTO GROUP"
-				elif question.status == 2:
-					return "SHOW ANSWERED QUESTION"
+				else: 	
+					done = 1 if checkMark() else 0
+					self.render('question.html', done = done, isProf=res[1], answer=answer, label=label, content=content, a=a, b=b, c=c, d=d, ra=ra, rb=rb, rc=rc, rd=rd, status=status)
+					#return "SHOW QUESTION"
 		else:
 			self.redirect('/')
 			#return "LOGINPAGE"

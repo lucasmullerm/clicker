@@ -18,8 +18,14 @@
     </script>
 </head>
 <body>
+    {% if isProf %}
     <a name="criar_grupo" href="/add">
         Criar Grupo
+    </a><br>
+    {% endif %}
+    {% if isProf == 0 %}
+    <a name="entrar_grupo" href="/enter">
+        Entrar em Grupo
     </a><br>
     {% for group in groups %}
         <a id="{{group[1]}}" href="/group?group_id={{group[1]}}">

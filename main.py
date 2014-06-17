@@ -273,9 +273,7 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 			self.response.write(json.dumps({"status": False, "redirect": True}))
 			#return "FALSE - GOTO LOGIN" 
 
-class EnterGroup(webapp2.RequestHandler): ##missing templates in ge
-
-t request
+class EnterGroup(webapp2.RequestHandler): ##missing templates in get request
 	def get(self):
 		res = checkLogin()
 		if res:

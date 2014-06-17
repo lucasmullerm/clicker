@@ -1,0 +1,31 @@
+home.html
+groups = [(name, id), (), (), ()]
+click: 
+window.location = "http://endereço/groups?groups_id" + id
+function f(id) {
+
+}
+#no atributo:
+<div id="lkjslkdjfalkj" onclick="f($(this).attr("id"))"> name_group</div>
+
+<div id="logou"> sair</div>
+
+
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  </head>
+  <body>
+    {% for group in groups %}
+      <div id={{ group[1] }} onclick="f({{ group[1] }})">
+	{{ group[0] }}
+      </div>
+    {% endfor %}
+    <div id="logou"> 
+      sair
+    </div>
+  </body>
+</html>
+{% endautoescape %}

@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+<head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+    questions = function (id) {
+     window.location.href = '/questions?questions_id' + id;
+    }  
+    groups = function (id) {
+        windows.location.href = '/groups?groups_id' + id;
+    }
+    logOut = function(){
+        $.ajax({
+            type: POST,
+            url: "",
+            data: {'action': 'logout'},
+            success: function (data){
+                window.location = "http:/clickerhum.appspot.com/"
+            }
+        })
+    }   
+    </script>
+</head>
+<body>
+    {% for group in groups %}
+        <div id={{ group[1] }} onclick="f({{ group[1] }})">
+            {{ group[0] }}
+        </div>
+    {% endfor %}
+    <div id="logou" onclick="logOut()"> 
+        sair
+    </div>
+</body>
+</html>
+{% endautoescape %}

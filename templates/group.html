@@ -21,8 +21,8 @@
 </head>
 <body>
     {{ description }} <br>
-    <a name="criar_grupo" href="/add">
-        Criar Grupo
+    <a name="criar_questao" href="/addQuestion">
+        Adicionar Questão
     </a><br><br>
     {% for question in questions %}
         <div id={{ question[1] }} href="/question?question_id={{question[1]}}">

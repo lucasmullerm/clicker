@@ -17,12 +17,12 @@
 </head>
 <body>
     Número de Respostas:<br>
-    {% if answer == 0 %}<b>{% endif %}A: {{ ra }}{% if answer == 0 %}</b>{% endif %}<br>
-    {% if answer == 1 %}<b>{% endif %}B: {{ rb }}{% if answer == 1 %}</b>{% endif %}<br>
-    {% if answer == 2 %}<b>{% endif %}C: {{rc}}{% if answer == 2 %}</b>{% endif %}<br>
-    {% if answer == 3 %}<b>{% endif %}D: {{rd}}{% if answer == 3 %}</b>{% endif %}<br>
-    <div id="back" href="/"> 
+    {% if answer == 0 %}<b>{% endif %}A: {{ ra }} ({{ra/(ra + rb + rc + rd)}}){% if answer == 0 %}</b>{% endif %}<br>
+    {% if answer == 1 %}<b>{% endif %}B: {{ rb }} ({{rb/(ra + rb + rc + rd)}}){% if answer == 1 %}</b>{% endif %}<br>
+    {% if answer == 2 %}<b>{% endif %}C: {{rc}} ({{rc/(ra + rb + rc + rd)}}){% if answer == 2 %}</b>{% endif %}<br>
+    {% if answer == 3 %}<b>{% endif %}D: {{rd}} ({{rd/(ra + rb + rc + rd)}}){% if answer == 3 %}</b>{% endif %}<br>
+    <a id="back" href="/"> 
         Voltar
-    </div>
+    </a>
 </body>
 </html>

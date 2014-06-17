@@ -272,10 +272,12 @@ class ShowGroup(LoginHandler):## missing templates in get request
 		if res:
 			if res[1]:
 				group_id = int(self.request.get("group_id"))
-				questions = db.gql("SELECT * FROM Question WHERE group_id = %(group_id)s"%{"group_id": group_id})
-				questions= [{"question_id": q.key().id(), "content": q.content, "label" : q.label, "answers":q.answers} for q in questions]
+				questions = ndb.gql("SELECT * FROM Question WHERE group_id = %(group_id)s"%{"group_id": group_id})
+				questions= [{"label" : q.label, "question_id": q.key().id()} for q in questions]
+
 				group = Group.by_id(group_id)
 				description = group.description
+				name = group.name
 				if checkAdmin(res[0], group_id):
 					return self.render('formquestion.html', description = description, groups = groups)
 				else:
@@ -427,7 +429,7 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 			else:
 				if question.status == 0:
 					self.error(401)
-				elif question.status == 1:
+				elif question.status == 1: 	
 					if not checkMark():
 						return "SHOW QUESTION READY TO ANSWER"
 					else:

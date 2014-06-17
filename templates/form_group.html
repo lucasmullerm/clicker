@@ -8,12 +8,6 @@ description
 <head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script>
-    questions = function (id) {
-     window.location.href = '/questions?questions_id' + id;
-    }  
-    groups = function (id) {
-        windows.location.href = '/groups?groups_id' + id;
-    }
     logOut = function(){
         $.ajax({
             type: POST,
@@ -36,8 +30,8 @@ description
    		Descrição: <input type="text" name="description"><br>
     	<input type="submit" value="Enviar">
 	</form>
-    <div id="back" href="http:/clickerhum.appspot.com/"> 
+    <a id="back" href="/"> 
         Voltar
-    </div>
+    </a>
 </body>
 </html>

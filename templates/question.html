@@ -3,12 +3,6 @@
 <head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script>
-    questions = function (id) {
-     window.location.href = '/questions?questions_id' + id;
-    }  
-    groups = function (id) {
-        windows.location.href = '/groups?groups_id' + id;
-    }
     logOut = function(){
         $.ajax({
             type: POST,
@@ -57,7 +51,7 @@
     {% if isProf and status == 2 %}
         <div>Estatísticas</div>
     {% endif %}
-    <div id="back" href="http:/clickerhum.appspot.com/"> 
+    <div id="back" href="/"> 
         Voltar
     </div>
 </body>

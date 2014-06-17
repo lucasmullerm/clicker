@@ -18,39 +18,23 @@
 <body>
 	<b>{{ label }}</b><br>
 	{{content}}<br>
-    <div id="a" 
-        {% if status == 1 and isProf == 0 %}
-            
-        {% endif %}>
-        {{ a }}
-    </div><br>
-    <div id="b" 
-        {% if status == 1 and isProf == 0 %}
-            
-        {% endif %}>
-        {{ b }}
-    </div><br>
-    <div id="c" 
-        {% if status == 1 and isProf == 0 %}
-            
-        {% endif %}>
-        {{ c }}
-    </div><br>
-    <div id="d" 
-        {% if status == 1 and isProf == 0 %}
-            
-        {% endif %}>
-        {{ d }}
-    </div><br>
+    <form method="post">
+    {% if status == 1 and isProf == 0 %}
+    <input type="submit" name="a" value="{{a}}"><br>
+    <input type="submit" name="b" value="{{b}}"><br> 
+    <input type="submit" name="c" value="{{c}}"><br> 
+    <input type="submit" name="d" value="{{d}}"><br> 
+    {% endif %}
     {% if isProf and status == 0 %}
-        <div>Enviar</div>
+        <input>Enviar</input>
     {% endif %}
     {% if isProf and status == 1 %}
-        <div>Fechar</div>
+        <input>Fechar</input>
     {% endif %}
     {% if isProf and status == 2 %}
-        <div>Estatísticas</div>
+        <input>Estatísticas</input>
     {% endif %}
+</form>
     <a id="back" href="/"> 
         Voltar
     </a>

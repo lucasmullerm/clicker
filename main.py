@@ -1,14 +1,36 @@
 ## Imports
-
+import os
 import json
 import datetime
 import webapp2
-from google.appengine.ext import ndb
+import jinja2
+import hashlib
+import hmac
+import random
+import string
+from google.appengine.ext import db
 
 
 ## DataBase
 
+template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
+                               autoescape = True)
+
+def render_str(template, **params):
+    t = jinja_env.get_template(template)
+    return t.render(params)
+
 class LoginHandler(webapp2.RequestHandler):
+	def write(self, *a, **kw):
+        self.response.out.write(*a, **kw)
+
+    def render_str(self, template, **params):
+        return render_str(template, **params)
+
+    def render(self, template, **kw):
+        self.write(self.render_str(template, **kw))
+
     def set_secure_cookie(self, name, val):
         cookie_val = make_secure_val(val)
         self.response.headers.add_header(
@@ -62,11 +84,11 @@ def groups_key(group = 'default'):
 def questions_key(group = 'default'):
     return db.Key.from_path('questions', group)
 
-class User(ndb.Model):
-    username    = ndb.StringProperty(required = True)
-    pw_hash = ndb.StringProperty(required = True)
-    email = ndb.StringProperty()
-    isProf  = ndb.BooleanProperty(required = True)
+class User(db.Model):
+    username    = db.StringProperty(required = True)
+    pw_hash = db.StringProperty(required = True)
+    email = db.StringProperty()
+    isProf  = db.BooleanProperty(required = True)
 
     @classmethod
     def by_id(cls, uid):
@@ -92,36 +114,34 @@ class User(ndb.Model):
         if u and valid_pw(username, pw, u.pw_hash):
             return u
 
-class Group(ndb.Model):
-	group_id = ndb.IntegerProperty(auto_now_add=True)
-	name = ndb.StringProperty(required=True)
-	admin = ndb.IntegerProperty(required=True)
-	description = ndb.TextProperty(required=True)
+class Group(db.Model):
+	name = db.StringProperty(required=True)
+	admin = db.IntegerProperty(required=True)
+	description = db.TextProperty(required=True)
 
 	@classmethod
     def by_id(cls, gid):
         return Group.get_by_id(gid, parent = groups_key())
 
-class Question(ndb.Model):
-	question_id = ndb.IntegerProperty(auto_now_add=True)
-	group_id = ndb.IntegerProperty(required=True)
-	content = ndb.TextProperty(required=True)
-	status = ndb.IntegerProperty(required=True)
+class Question(db.Model):
+	group_id = db.IntegerProperty(required=True)
+	content = db.TextProperty(required=True)
+	status = db.IntegerProperty(required=True)
 	###
 	### status: 0 - ready, 1 - sent, 2 - ended
 	###
-	a = ndb.StringProperty(required=True)
-	b = ndb.StringProperty(required=True)
-	c = ndb.StringProperty(required=True)
-	d = ndb.StringProperty(required=True)
-	ra = ndb.IntegerProperty(required=True)
-	rb = ndb.IntegerProperty(required=True)
-	rc = ndb.IntegerProperty(required=True)
-	rd = ndb.IntegerProperty(required=True)
+	a = db.StringProperty(required=True)
+	b = db.StringProperty(required=True)
+	c = db.StringProperty(required=True)
+	d = db.StringProperty(required=True)
+	ra = db.IntegerProperty(required=True)
+	rb = db.IntegerProperty(required=True)
+	rc = db.IntegerProperty(required=True)
+	rd = db.IntegerProperty(required=True)
 	###
 	### counter
 	###
-	answer = ndb.IntegerProperty(required=True)
+	answer = db.IntegerProperty(required=True)
 	###
 	### 0 - a, 1 - b, 2 - c, 3 - d
 	###
@@ -129,14 +149,14 @@ class Question(ndb.Model):
 	def by_id(cls, qid):
         return Question.get_by_id(qid, parent = questions_key())
 
-class Subscription(ndb.Model):
-	user_id = ndb.IntegerProperty(required=True)
-	group_id = ndb.IntegerProperty(required=True)
+class Subscription(db.Model):
+	user_id = db.IntegerProperty(required=True)
+	group_id = db.IntegerProperty(required=True)
 
-class Mark(ndb.Model):
-	user_id = ndb.IntegerProperty(required=True)
-	question_id = ndb.IntegerProperty(required=True)
-	marked = ndb.IntegerProperty(required=True)
+class Mark(db.Model):
+	user_id = db.IntegerProperty(required=True)
+	question_id = db.IntegerProperty(required=True)
+	marked = db.IntegerProperty(required=True)
 
 
 ## Auxiliar Methods
@@ -157,23 +177,23 @@ def LogIn(handler, username, password): ##incomplete#########################
 
 
 def existUser(username):
-	res = ndb.gql("SELECT * FROM User WHERE username = '%(username)s'"%{"username": username})
+	res = db.gql("SELECT * FROM User WHERE username = '%(username)s'"%{"username": username})
 	return bool(list(res))
 
 def checkGroup(name):
-	res = ndb.gql("SELECT * FROM Group WHERE name = '%s'"%(name))
+	res = db.gql("SELECT * FROM Group WHERE name = '%s'"%(name))
 	return bool(list(res))
 
 def checkAdmin(user_id, group_id):
-	res = ndb.gql("SELECT * FROM Group WHERE group_id = %(group_id)s AND admin = %(user_id)s"%({"group_id":group_id, "user_id":user_id}))
-	return bool(list(res))
+	group = Group.by_id(group_id)
+	return group.admin == user_id
 
 def checkLabel(label, group_id):
-	res = ndb.gql("SELECT * FROM Question WHERE label = '%(label)s' AND admin = %(group_id)s"%({"label": label, "group_id":group_id}))
+	res = db.gql("SELECT * FROM Question WHERE label = '%(label)s' AND group_id = %(group_id)s"%({"label": label, "group_id":group_id}))
 	return bool(list(res))
 
 def checkMark(user_id, question_id):
-	mark = ndb.gql("SELECT * FROM Mark WHERE user_id = %(user_id)s AND question_id = %(question_id)s" %({"user_id": user_id, "question_id": question_id}))
+	mark = db.gql("SELECT * FROM Mark WHERE user_id = %(user_id)s AND question_id = %(question_id)s" %({"user_id": user_id, "question_id": question_id}))
 	return bool(list(mark))
 
 
@@ -186,13 +206,14 @@ class Home(LoginHandler):## missing templates in get request
 		res = checkLogin()
 		if res:
 			if res[1]:
-				query = ndb.gql("SELECT * FROM Group WHERE admin = %s"%(res[0]))
+				query = db.gql("SELECT * FROM Group WHERE admin = %s"%(res[0]))
 				groups = [(g.name, g.group_id) for g in query]
 				return "PROFPAGE(groups)"
 			else:
-				subs = ndb.gql("SELECT * FROM Subscription WHERE user_id = %s"%(res[0]))
-				subs = tuple(s.group_id for s in subs)
-				query = ndb.gql("SELECT * FROM Group WHERE group_id IN %s"%(subs))
+				subs = db.gql("SELECT * FROM Subscription WHERE user_id = %s"%(res[0]))
+				query = []
+				for s in subs:
+					query.append(Group.by_id(s.group_id))
 				groups = [(g.name, g.group_id) for g in query]
 				return "ALUNOPAGE(groups)"
 		else:
@@ -248,9 +269,9 @@ class ShowGroup(LoginHandler):## missing templates in get request
 		if res:
 			if res[1]:
 				group_id = int(self.request.get("group_id"))
-				questions = ndb.gql("SELECT * FROM Question WHERE group_id = %(group_id)s"%{"group_id": group_id})
-				questions= [{"question_id": q.question_id, "content": q.content, "label" : q.label, "answers":q.answers} for q in questions]
-				group = ndb.gql("SELECT * FROM Group WHERE group_id = %(group_id)s"%{"group_id": group_id})
+				questions = db.gql("SELECT * FROM Question WHERE group_id = %(group_id)s"%{"group_id": group_id})
+				questions= [{"question_id": q.key().id(), "content": q.content, "label" : q.label, "answers":q.answers} for q in questions]
+				group = Group.by_id(group_id)
 				description = group.description
 				if checkAdmin(res[0], group_id):
 					return "ADD QUESTION FORM PAGE (description, questions)"
@@ -310,7 +331,7 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 		if res:
 			if res[1]:
 				group_id = int(self.request.get("group_id"))
-				group = ndb.gql("SELECT * FROM Group WHERE group_id = %s"%(group_id))
+				group = Group.by_id(group_id)
 				name = group.name
 				if checkAdmin(res[0], group_id):
 					return "ADD QUESTION FORM PAGE (name, group_id)"
@@ -379,7 +400,7 @@ class EnterGroup(webapp2.RequestHandler): ##missing templates in get request
 		self.response.headers['Content-Type'] = 'application/json'
 		if res:
 			name = self.request.get("name")
-			group = ndb.gql("SELECT * FROM Group WHERE name = '%s'"%(name)).get()
+			group = db.gql("SELECT * FROM Group WHERE name = '%s'"%(name)).get()
 			if group:
 				new_sub = Subscription(group_id=group.group_id, user_id=res[0])
 				new_sub.put()
@@ -397,7 +418,7 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 		res = checkLogin()
 		if res:
 			question_id = int(self.request.get("question_id"))
-			question = ndb.gql("SELECT * FROM Question WHERE question_id = %s"%(question_id)).get()
+			question = Question.by_id(question_id)
 			if res[1]:
 				return "SHOW QUESTION(question)(button = [start, stop, STATISTICS])"
 			else:
@@ -418,7 +439,7 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 		self.response.headers['Content-Type'] = 'application/json'
 		if res:
 			question_id = int(self.request.get("question_id"))
-			question = ndb.gql("SELECT * FROM Question WHERE question_id = %s"%(question_id)).get()
+			question = Question.by_id(question_id)
 			if res[1]:
 				if question.status == 0:
 					question.status = 1
@@ -436,7 +457,7 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 					self.error(401)
 				elif question.status == 1:
 					marked = int(self.request.get('marked'))
-					new_mark = Mark(user_id=res[0], question_id=question.question_id, marked=marked)
+					new_mark = Mark(user_id=res[0], question_id=question.key().id(), marked=marked)
 					self.response.write(json.dumps({"status": True}))
 					pass
 				elif question.status == 2:

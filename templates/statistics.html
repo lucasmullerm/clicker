@@ -1,5 +1,4 @@
 
-<!DOCTYPE html>
 <html>
 <head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
@@ -23,13 +22,9 @@
     </script>
 </head>
 <body>
-    {% for group in groups %}
-        <div id={{ group[1] }} onclick="f({{ group[1] }})">
-            {{ group[0] }}
-        </div>
-    {% endfor %}
-    <div id="logou" onclick="logOut()"> 
-        sair
+
+    <div id="back" href="http:/clickerhum.appspot.com/"> 
+        Voltar
     </div>
 </body>
 </html>

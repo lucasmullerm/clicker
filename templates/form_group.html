@@ -1,3 +1,7 @@
+name
+description
+
+
 
 <!DOCTYPE html>
 <html>
@@ -20,16 +24,20 @@
             }
         })
     }   
+    back = function () {
+
+    }
     </script>
 </head>
 <body>
-    {% for group in groups %}
-        <div id={{ group[1] }} onclick="f({{ group[1] }})">
-            {{ group[0] }}
-        </div>
-    {% endfor %}
-    <div id="logou" onclick="logOut()"> 
-        sair
+	<b>Grupo</b>
+	<form id="form">
+   		Nome: <input type="text" name="name"><br>
+   		Descrição: <input type="text" name="description"><br>
+    	<input type="submit" value="Enviar">
+	</form>
+    <div id="back" href="http:/clickerhum.appspot.com/"> 
+        Voltar
     </div>
 </body>
 </html>

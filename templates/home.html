@@ -18,8 +18,11 @@
     </script>
 </head>
 <body>
+    <a name="criar_grupo" href="/add">
+        Criar Grupo
+    </a>
     {% for group in groups %}
-        <a id={{ group[1] }} href="/group?group_id={{group[1]}}">
+        <a id="{{group[1]}}" href="/group?group_id={{group[1]}}">
             {{ group[0] }}
         </a>
     {% endfor %}

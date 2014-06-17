@@ -1,28 +1,29 @@
 
 <!DOCTYPE html>
-<html>
-<head>
+<html><head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
     <script>
+    
     logOut = function(){
-        $.ajax({
+        $.ajax({ 
             type: POST,
             url: "",
             data: {'action': 'logout'},
             success: function (data){
                 window.location = "http:/clickerhum.appspot.com/"
             }
-        })
-    }   
+        })  
+    }
     </script>
 </head>
 <body>
-	<b>Grupo</b>
-	<form id="form">
-   		Nome: <input type="text" name="name"><br>
-   		Descrição: <input type="textarea" name="description"><br>
-    	<input type="submit" value="Enviar">
-	</form>
+    <form method="post">
+    {% for group in groups %}
+        <input name="group_id" type="submit" id="{{group[1]}}" href="/group?group_id={{group[1]}}" value="{{group[0]}}">
+            
+    {% endfor %}
+    </form>
     <a id="back" href="/"> 
         Voltar
     </a>

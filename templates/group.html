@@ -21,7 +21,7 @@
 </head>
 <body>
     {{ description }} <br>
-    <a name="criar_questao" href="/addQuestion">
+    <a name="criar_questao" href="/addQuestion?group_id={{group_id}}">
         Adicionar Questão
     </a><br><br>
     {% for question in questions %}

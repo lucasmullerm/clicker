@@ -3,12 +3,6 @@
 <head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script>
-    questions = function (id) {
-     window.location.href = '/questions?questions_id' + id;
-    }  
-    groups = function (id) {
-        windows.location.href = '/groups?groups_id' + id;
-    }
     logOut = function(){
         $.ajax({
             type: POST,
@@ -24,15 +18,16 @@
 <body>
 	<b>Questão</b>
 	<form id="form">
-   		Nome: <input type="text" name="name"><br>
-   		Descrição: <input type="text" name="description"><br>
+   		Titulo: <input type="text" name="label"><br>
+   		Enunciado: <input type="text" name="content"><br>
+   		<input type="hidden" name="group_id" value="{{group_id}}">
    		<input type="radio" name="answer" value="a">Opção A: <input type="text" name="a"><br>
    		<input type="radio" name="answer" value="b">Opção B: <input type="text" name="b"><br>
    		<input type="radio" name="answer" value="c">Opção C: <input type="text" name="c"><br>
    		<input type="radio" name="answer" value="d">Opção D: <input type="text" name="d"><br>
     	<input type="submit" value="Enviar">
 	</form>
-    <div id="back" href="http:/clickerhum.appspot.com/"> 
+    <div id="back" href="/"> 
         Voltar
     </div>
 </body>

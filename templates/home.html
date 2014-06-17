@@ -1,13 +1,27 @@
 
 <!DOCTYPE html>
-<html>
-<head>
+<html><head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+    <script>
+    
+    logOut = function(){
+        $.ajax({ 
+            type: POST,
+            url: "",
+            data: {'action': 'logout'},
+            success: function (data){
+                window.location = "http:/clickerhum.appspot.com/"
+            }
+        })  
+    }
+    </script>
 </head>
 <body>
     {% for group in groups %}
-        <div id={{ group[1] }} onclick="f({{ group[1] }})">
+        <a id={{ group[1] }} href="/group?group_id={{group[1]}}">
             {{ group[0] }}
-        </div>
+        </a>
     {% endfor %}
     <form method="post">
     <input id="logout" url="" name="action" type="submit" value="Sair"> 

@@ -147,6 +147,7 @@ class Question(db.Model):
 	### 0 - a, 1 - b, 2 - c, 3 - d
 	###
 
+	@classmethod
 	def by_id(cls, qid):
 		return Question.get_by_id(qid)
 
@@ -466,7 +467,7 @@ class ShowQuestion(LoginHandler): ##incomplete
 				if question.status == 0:
 					self.error(401)
 				else: 	
-					done = 1 if checkMark() else 0
+					done = 1 if checkMark(res[0], question_id) else 0
 					self.render('question.html', done = done, isProf=res[1], answer=answer, label=label, content=content, a=a, b=b, c=c, d=d, ra=ra, rb=rb, rc=rc, rd=rd, status=status)
 					#return "SHOW QUESTION"
 		else:
@@ -486,6 +487,8 @@ class ShowQuestion(LoginHandler): ##incomplete
 				elif question.status == 1:
 					question.status = 2
 					question.put()
+					for x in range(1000000):
+						pass
 					self.redirect("/question?question_id=" + str(question_id))
 					
 				elif question.status == 2:
@@ -495,8 +498,34 @@ class ShowQuestion(LoginHandler): ##incomplete
 				if question.status == 0:
 					self.error(401)
 				elif question.status == 1:
-					marked = int(self.request.get('marked'))
-					new_mark = Mark(user_id=res[0], question_id=question.key().id(), marked=marked)
+					answer = 4
+					a = self.request.get('a')
+					b = self.request.get('b')
+					c = self.request.get('c')
+					d = self.request.get('d')
+					print "---------------------------------"
+					print "a: " + a
+					print "b: " + b
+					print "c: " + c
+					print "d: " + d
+					print "---------------------------------"
+					question = Question.by_id(question_id)
+					if a:
+						answer = 0
+						question.ra += 1
+					elif b:
+						answer = 1
+						question.rb += 1
+					elif c:
+						answer = 2
+						question.rc += 1
+					elif d:
+						answer = 3
+						question.rd += 1
+					question.put()
+					new_mark = Mark(user_id=res[0], question_id=question.key().id(), marked=answer)
+					new_mark.put()
+
 					self.redirect("/question?question_id=" + str(question_id))
 					pass
 				elif question.status == 2:

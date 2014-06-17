@@ -18,41 +18,41 @@
 <body>
 	<b>{{ label }}</b><br>
 	{{content}}<br>
-    <div id="a" 
+    <a id="a" 
         {% if status == 1 and isProf == 0 %}
             <script> </script>
         {% endif %}>
         {{ a }}
-    </div><br>
-    <div id="b" 
+    </a><br>
+    <a id="b" 
         {% if status == 1 and isProf == 0 %}
             <script> </script>
         {% endif %}>
         {{ b }}
-    </div><br>
-    <div id="c" 
+    </a><br>
+    <a id="c" 
         {% if status == 1 and isProf == 0 %}
             <script> </script>
         {% endif %}>
         {{ c }}
-    </div><br>
-    <div id="d" 
+    </a><br>
+    <a id="d" 
         {% if status == 1 and isProf == 0 %}
             <script> </script>
         {% endif %}>
         {{ d }}
-    </div><br>
+    </a><br>
     {% if isProf and status == 0 %}
-        <div>Enviar</div>
+        <a>Enviar</a>
     {% endif %}
     {% if isProf and status == 1 %}
-        <div>Fechar</div>
+        <a>Fechar</a>
     {% endif %}
     {% if isProf and status == 2 %}
-        <div>Estatísticas</div>
+        <a>Estatísticas</a>
     {% endif %}
-    <div id="back" href="/"> 
+    <a id="back" href="/"> 
         Voltar
-    </div>
+    </a>
 </body>
 </html>

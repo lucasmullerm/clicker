@@ -1,140 +1,162 @@
 ## Imports
-
+import os
 import json
 import datetime
 import webapp2
-from google.appengine.ext import ndb
+import jinja2
+import hashlib
+import hmac
+import random
+import string
+from google.appengine.ext import db
 
 
 ## DataBase
 
+template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
+							   autoescape = True)
+
+def render_str(template, **params):
+	t = jinja_env.get_template(template)
+	return t.render(params)
+
 class LoginHandler(webapp2.RequestHandler):
-    def set_secure_cookie(self, name, val):
-        cookie_val = make_secure_val(val)
-        self.response.headers.add_header(
-            'Set-Cookie',
-            '%s=%s; Path=/' % (name, cookie_val))
+	def write(self, *a, **kw):
+		self.response.out.write(*a, **kw)
 
-    def read_secure_cookie(self, name):
-        cookie_val = self.request.cookies.get(name)
-        return cookie_val and check_secure_val(cookie_val)
+	def render_str(self, template, **params):
+		return render_str(template, **params)
 
-    def login(self, user):
-        self.set_secure_cookie('user_id', str(user.key().id()))
+	def render(self, template, **kw):
+		self.write(self.render_str(template, **kw))
 
-    def logout(self):
-        self.response.delete_cookie('user_id')
+	def set_secure_cookie(self, name, val):
+		cookie_val = make_secure_val(val)
+		self.response.headers.add_header(
+			'Set-Cookie',
+			'%s=%s; Path=/' % (name, cookie_val))
 
-    def initialize(self, *a, **kw):
-        webapp2.RequestHandler.initialize(self, *a, **kw)
-        uid = self.read_secure_cookie('user_id')
-        self.user = uid and User.by_id(int(uid))
+	def read_secure_cookie(self, name):
+		cookie_val = self.request.cookies.get(name)
+		return cookie_val and check_secure_val(cookie_val)
+
+	def login(self, user):
+		self.set_secure_cookie('user_id', str(user.key().id()))
+
+	def logout(self):
+		self.response.delete_cookie('user_id')
+
+	def initialize(self, *a, **kw):
+		webapp2.RequestHandler.initialize(self, *a, **kw)
+		uid = self.read_secure_cookie('user_id')
+		self.user = uid and User.by_id(int(uid))
 
 SECRET = "muller3e3305d5c94558muts173dc874c366081abrailee9f64756631feb6932"
 
 def make_secure_val(s):
-        return "%s|%s" % (s, hmac.new(SECRET, s).hexdigest())
+		return "%s|%s" % (s, hmac.new(SECRET, s).hexdigest())
 
 def check_secure_val(h):
-        val = h.split('|')[0]
-        if h == make_secure_val(val):
-                return val
+		val = h.split('|')[0]
+		if h == make_secure_val(val):
+				return val
 
 def make_salt():
-    return ''.join(random.choice(string.letters) for x in xrange(5))
+	return ''.join(random.choice(string.letters) for x in xrange(5))
 
 def make_pw_hash(name, pw, salt=None):
-    if not salt:
-        salt=make_salt()
-    h = hashlib.sha256(name + pw + salt).hexdigest()
-    return '%s,%s' % (h, salt)
+	if not salt:
+		salt=make_salt()
+	h = hashlib.sha256(name + pw + salt).hexdigest()
+	return '%s,%s' % (h, salt)
 
 def valid_pw(name, pw, h):
-    salt = h.split(',')[1]
-    return h == make_pw_hash(name, pw, salt)
+	salt = h.split(',')[1]
+	return h == make_pw_hash(name, pw, salt)
 
 def users_key(group = 'default'):
-    return db.Key.from_path('users', group)
+	return db.Key.from_path('users', group)
 
 def groups_key(group = 'default'):
-    return db.Key.from_path('groups', group)
+	return db.Key.from_path('groups', group)
 
 def questions_key(group = 'default'):
-    return db.Key.from_path('questions', group)
+	return db.Key.from_path('questions', group)
 
-class User(ndb.Model):
-    username    = ndb.StringProperty(required = True)
-    pw_hash = ndb.StringProperty(required = True)
-    email = ndb.StringProperty()
-    isProf  = ndb.BooleanProperty(required = True)
-
-    @classmethod
-    def by_id(cls, uid):
-        return User.get_by_id(uid, parent = users_key())
-
-    @classmethod
-    def by_name(cls, username):
-        u = User.all().filter('username =', username).get()
-        return u
-
-    @classmethod
-    def register(cls, username, pw, isProf, email = None):
-        pw_hash = make_pw_hash(name, pw)
-        return User(parent = users_key(),
-                    username = username,
-                    pw_hash = pw_hash,
-                    isProf = isProf,
-                    email = email)
-
-    @classmethod
-    def login(cls, name, pw):
-        u = cls.by_name(name)
-        if u and valid_pw(username, pw, u.pw_hash):
-            return u
-
-class Group(ndb.Model):
-	name = ndb.StringProperty(required=True)
-	admin = ndb.IntegerProperty(required=True)
-	description = ndb.TextProperty(required=True)
+class User(db.Model):
+	username	= db.StringProperty(required = True)
+	pw_hash = db.StringProperty(required = True)
+	email = db.StringProperty()
+	isProf  = db.BooleanProperty(required = True)
 
 	@classmethod
-    def by_id(cls, gid):
-        return Group.get_by_id(gid, parent = groups_key())
+	def by_id(cls, uid):
+		return User.get_by_id(uid, parent = users_key())
 
-class Question(ndb.Model):
-	group_id = ndb.IntegerProperty(required=True)
-	content = ndb.TextProperty(required=True)
-	status = ndb.IntegerProperty(required=True)
+	@classmethod
+	def by_name(cls, username):
+		u = User.all().filter('username =', username).get()
+		return u
+
+	@classmethod
+	def register(cls, username, pw, isProf, email = None):
+		pw_hash = make_pw_hash(name, pw)
+		return User(parent = users_key(),
+					username = username,
+					pw_hash = pw_hash,
+					isProf = isProf,
+					email = email)
+
+	@classmethod
+	def login(cls, name, pw):
+		u = cls.by_name(name)
+		if u and valid_pw(username, pw, u.pw_hash):
+			return u
+
+class Group(db.Model):
+	name = db.StringProperty(required=True)
+	admin = db.IntegerProperty(required=True)
+	description = db.TextProperty(required=True)
+
+	@classmethod
+	def by_id(cls, gid):
+		return Group.get_by_id(gid, parent = groups_key())
+
+class Question(db.Model):
+	group_id = db.IntegerProperty(required=True)
+	content = db.TextProperty(required=True)
+	status = db.IntegerProperty(required=True)
 	###
 	### status: 0 - ready, 1 - sent, 2 - ended
 	###
-	a = ndb.StringProperty(required=True)
-	b = ndb.StringProperty(required=True)
-	c = ndb.StringProperty(required=True)
-	d = ndb.StringProperty(required=True)
-	ra = ndb.IntegerProperty(required=True)
-	rb = ndb.IntegerProperty(required=True)
-	rc = ndb.IntegerProperty(required=True)
-	rd = ndb.IntegerProperty(required=True)
+	a = db.StringProperty(required=True)
+	b = db.StringProperty(required=True)
+	c = db.StringProperty(required=True)
+	d = db.StringProperty(required=True)
+	ra = db.IntegerProperty(required=True)
+	rb = db.IntegerProperty(required=True)
+	rc = db.IntegerProperty(required=True)
+	rd = db.IntegerProperty(required=True)
 	###
 	### counter
 	###
-	answer = ndb.IntegerProperty(required=True)
+	answer = db.IntegerProperty(required=True)
 	###
 	### 0 - a, 1 - b, 2 - c, 3 - d
 	###
 
 	def by_id(cls, qid):
-        return Question.get_by_id(qid, parent = questions_key())
+		return Question.get_by_id(qid, parent = questions_key())
 
-class Subscription(ndb.Model):
-	user_id = ndb.IntegerProperty(required=True)
-	group_id = ndb.IntegerProperty(required=True)
+class Subscription(db.Model):
+	user_id = db.IntegerProperty(required=True)
+	group_id = db.IntegerProperty(required=True)
 
-class Mark(ndb.Model):
-	user_id = ndb.IntegerProperty(required=True)
-	question_id = ndb.IntegerProperty(required=True)
-	marked = ndb.IntegerProperty(required=True)
+class Mark(db.Model):
+	user_id = db.IntegerProperty(required=True)
+	question_id = db.IntegerProperty(required=True)
+	marked = db.IntegerProperty(required=True)
 
 
 ## Auxiliar Methods
@@ -147,19 +169,19 @@ def checkLogin(handler): ##incomplete#########################
 
 def LogIn(handler, username, password): ##incomplete#########################
 	u = User.login(username, password)
-    if u:
-        handler.login(u)
-        return ["user_id", "isProf"]
-    else:
-      	return False
+	if u:
+		handler.login(u)
+		return ["user_id", "isProf"]
+	else:
+	  	return False
 
 
 def existUser(username):
-	res = ndb.gql("SELECT * FROM User WHERE username = '%(username)s'"%{"username": username})
+	res = db.gql("SELECT * FROM User WHERE username = '%(username)s'"%{"username": username})
 	return bool(list(res))
 
 def checkGroup(name):
-	res = ndb.gql("SELECT * FROM Group WHERE name = '%s'"%(name))
+	res = db.gql("SELECT * FROM Group WHERE name = '%s'"%(name))
 	return bool(list(res))
 
 def checkAdmin(user_id, group_id):
@@ -167,11 +189,11 @@ def checkAdmin(user_id, group_id):
 	return group.admin == user_id
 
 def checkLabel(label, group_id):
-	res = ndb.gql("SELECT * FROM Question WHERE label = '%(label)s' AND group_id = %(group_id)s"%({"label": label, "group_id":group_id}))
+	res = db.gql("SELECT * FROM Question WHERE label = '%(label)s' AND group_id = %(group_id)s"%({"label": label, "group_id":group_id}))
 	return bool(list(res))
 
 def checkMark(user_id, question_id):
-	mark = ndb.gql("SELECT * FROM Mark WHERE user_id = %(user_id)s AND question_id = %(question_id)s" %({"user_id": user_id, "question_id": question_id}))
+	mark = db.gql("SELECT * FROM Mark WHERE user_id = %(user_id)s AND question_id = %(question_id)s" %({"user_id": user_id, "question_id": question_id}))
 	return bool(list(mark))
 
 
@@ -184,18 +206,21 @@ class Home(LoginHandler):## missing templates in get request
 		res = checkLogin()
 		if res:
 			if res[1]:
-				query = ndb.gql("SELECT * FROM Group WHERE admin = %s"%(res[0]))
+				query = db.gql("SELECT * FROM Group WHERE admin = %s"%(res[0]))
 				groups = [(g.name, g.group_id) for g in query]
-				return "PROFPAGE(groups)"
+				#return "PROFPAGE(groups)"
+				self.render('home.html', groups)
 			else:
-				subs = ndb.gql("SELECT * FROM Subscription WHERE user_id = %s"%(res[0]))
+				subs = db.gql("SELECT * FROM Subscription WHERE user_id = %s"%(res[0]))
 				query = []
 				for s in subs:
 					query.append(Group.by_id(s.group_id))
 				groups = [(g.name, g.group_id) for g in query]
-				return "ALUNOPAGE(groups)"
+				#return "ALUNOPAGE(groups)"
+				self.render('home.html', groups)
 		else:
-			return "LOGINPAGE"
+			#return "LOGINPAGE"
+			self.render('login.html')
 
 	def post(self):
 		self.response.headers['Content-Type'] = 'application/json'
@@ -220,7 +245,7 @@ class Home(LoginHandler):## missing templates in get request
 
 class Register(LoginHandler):## missing templates in get request
 	def get(self):
-		return "REGISTER PAGE"
+		return self.render('register.html')
 
 	def post(self):
 		username = self.request.get('username')
@@ -236,8 +261,8 @@ class Register(LoginHandler):## missing templates in get request
 		else:
 			##change password for hash
 			u = User.register(username, password, email = "", isProf)
-            u.put()
-            self.login(u)
+			u.put()
+			self.login(u)
 			print "new user: " + str(username) + ("(prof)" if isProf else "")
 			self.response.write(json.dumps({"status": True})) 
 
@@ -247,12 +272,12 @@ class ShowGroup(LoginHandler):## missing templates in get request
 		if res:
 			if res[1]:
 				group_id = int(self.request.get("group_id"))
-				questions = ndb.gql("SELECT * FROM Question WHERE group_id = %(group_id)s"%{"group_id": group_id})
+				questions = db.gql("SELECT * FROM Question WHERE group_id = %(group_id)s"%{"group_id": group_id})
 				questions= [{"question_id": q.key().id(), "content": q.content, "label" : q.label, "answers":q.answers} for q in questions]
 				group = Group.by_id(group_id)
 				description = group.description
 				if checkAdmin(res[0], group_id):
-					return "ADD QUESTION FORM PAGE (description, questions)"
+					return self.render('formquestion.html', description = description, groups = groups)
 				else:
 					self.error(401)
 					#return "GROUP BELONGS TO OTHER USER"
@@ -378,7 +403,7 @@ class EnterGroup(webapp2.RequestHandler): ##missing templates in get request
 		self.response.headers['Content-Type'] = 'application/json'
 		if res:
 			name = self.request.get("name")
-			group = ndb.gql("SELECT * FROM Group WHERE name = '%s'"%(name)).get()
+			group = db.gql("SELECT * FROM Group WHERE name = '%s'"%(name)).get()
 			if group:
 				new_sub = Subscription(group_id=group.group_id, user_id=res[0])
 				new_sub.put()

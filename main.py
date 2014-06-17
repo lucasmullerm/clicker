@@ -121,12 +121,13 @@ class Group(db.Model):
 
 	@classmethod
 	def by_id(cls, gid):
-		return Group.get_by_id(gid, parent = groups_key())
+		return Group.get_by_id(gid)
 
 class Question(db.Model):
 	group_id = db.IntegerProperty(required=True)
 	content = db.TextProperty(required=True)
 	status = db.IntegerProperty(required=True)
+	label = db.StringProperty(required=True)
 	###
 	### status: 0 - ready, 1 - sent, 2 - ended
 	###
@@ -147,7 +148,7 @@ class Question(db.Model):
 	###
 
 	def by_id(cls, qid):
-		return Question.get_by_id(qid, parent = questions_key())
+		return Question.get_by_id(qid)
 
 class Subscription(db.Model):
 	user_id = db.IntegerProperty(required=True)
@@ -207,7 +208,7 @@ class Home(LoginHandler):## missing templates in get request
 		if res:
 			if res[1]:
 				query = db.GqlQuery("SELECT * FROM Group WHERE admin = %s"%(res[0]))
-				groups = [(g.name, g.group_id) for g in query]
+				groups = [(g.name, g.key().id()) for g in query]
 				#return "PROFPAGE(groups)"
 				self.render('home.html', groups=groups)
 			else:
@@ -215,7 +216,7 @@ class Home(LoginHandler):## missing templates in get request
 				query = []
 				for s in subs:
 					query.append(Group.by_id(s.group_id))
-				groups = [(g.name, g.group_id) for g in query]
+				groups = [(g.name, g.key().id()) for g in query]
 				#return "ALUNOPAGE(groups)"
 				self.render('home.html', groups=groups)
 		else:
@@ -273,13 +274,16 @@ class ShowGroup(LoginHandler):## missing templates in get request
 			if res[1]:
 				group_id = int(self.request.get("group_id"))
 				questions = db.GqlQuery("SELECT * FROM Question WHERE group_id = %(group_id)s"%{"group_id": group_id})
-				questions= [{"label" : q.label, "question_id": q.key().id()} for q in questions]
-
+				questions= [(q.label, q.key().id()) for q in questions]
 				group = Group.by_id(group_id)
+				#group = db.GqlQuery("SELECT * FROM Group where __key__ = KEY('Group', %s)"%(group_id)).get()
+				print "---------------------------------------------------------------------------------"
+				print group
+				print "---------------------------------------------------------------------------------"
 				description = group.description
 				name = group.name
 				if checkAdmin(res[0], group_id):
-					return self.render('group.html', description = description, name = name, questions = questions)
+					return self.render('group.html', description = description, name = name, questions = questions, group_id=group_id)
 				else:
 					self.error(401)
 					#return "GROUP BELONGS TO OTHER USER"
@@ -331,7 +335,7 @@ class AddGroup(LoginHandler): ## missing templates in get request
 			self.redirect('/')
 			#return "FALSE - GOTO LOGIN"
 
-class AddQuestion(webapp2.RequestHandler):## missing templates in get request
+class AddQuestion(LoginHandler):## missing templates in get request
 	def get(self):
 		res = checkLogin(self)
 		if res:
@@ -357,12 +361,15 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 		res = checkLogin(self)
 		if res:
 			if res[1]:
+				group_id = int(self.request.get("group_id"))
 				if checkAdmin(res[0], group_id):
 					label = self.request.get("label")
-					group_id = int(self.request.get("group_id"))
+					print "---------------------------------"
+					print "label : " + label
+					print "---------------------------------"
 					if not checkLabel(label, group_id):
 						content = self.request.get("content")
-						answer = self.request.get("answer")
+						answer = int(self.request.get("answer"))
 						a = self.request.get("a")
 						b = self.request.get("b")
 						c = self.request.get("c")
@@ -372,7 +379,7 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 						rc = 0
 						rd = 0
 						status = 0
-						new_question = Question(group_id=group_id, content=content, status=status, a=a, b=b, c=c, d=d, ra=0,rb=0, rc=0, rd=0, answer=answer)
+						new_question = Question(label=label, group_id=group_id, content=content, status=status, a=a, b=b, c=c, d=d, ra=0,rb=0, rc=0, rd=0, answer=answer)
 						new_question.put()
 						self.redirect('group?group_id=' + str(group_id))
 						#return "TRUE + go to group_id"
@@ -389,7 +396,7 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 			self.redirect('/')
 			#return "FALSE - GOTO LOGIN" 
 
-class EnterGroup(webapp2.RequestHandler): ##missing templates in get request
+class EnterGroup(LoginHandler): ##missing templates in get request
 	def get(self):
 		res = checkLogin(self)
 		if res:
@@ -419,7 +426,7 @@ class EnterGroup(webapp2.RequestHandler): ##missing templates in get request
 			self.redirect('/')
 			#return "GOTO LOGIN" 
 
-class ShowQuestion(webapp2.RequestHandler): ##incomplete
+class ShowQuestion(LoginHandler): ##incomplete
 	def get(self):
 		res = checkLogin(self)
 		if res:
@@ -496,4 +503,5 @@ app = webapp2.WSGIApplication([('/', Home),
 	('/add', AddGroup),
 	('/enter', EnterGroup),
 	('/group', ShowGroup),
+	('/addQuestion', AddQuestion),
 	('/question', ShowQuestion)], debug=True)

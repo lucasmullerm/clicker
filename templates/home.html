@@ -27,6 +27,7 @@
     <a name="entrar_grupo" href="/enter">
         Entrar em Grupo
     </a><br>
+    {% endif %}
     {% for group in groups %}
         <a id="{{group[1]}}" href="/group?group_id={{group[1]}}">
             {{ group[0] }}

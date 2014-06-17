@@ -111,7 +111,7 @@ class User(db.Model):
 	@classmethod
 	def login(cls, name, pw):
 		u = cls.by_name(name)
-		if u and valid_pw(username, pw, u.pw_hash):
+		if u and valid_pw(name, pw, u.pw_hash):
 			return u
 
 class Group(db.Model):
@@ -224,16 +224,18 @@ class Home(LoginHandler):## missing templates in get request
 
 	def post(self):
 		action = self.request.get('action')
+		print "action: " + action
 		if action == "Login":
 			username = self.request.get('username')
 			password = self.request.get('password')
 			if not username or not password:
 				return
 	
-			res = LogIn(username, password)
+			res = LogIn(self, username, password)
 	
 			self.redirect('/') 
 		else:
+			print "action: " + action
 			self.logout()
 			self.redirect('/')
 

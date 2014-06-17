@@ -88,7 +88,7 @@ class User(db.Model):
 	username	= db.StringProperty(required = True)
 	pw_hash = db.StringProperty(required = True)
 	email = db.StringProperty()
-	isProf  = db.BooleanProperty(required = True)
+	isProf  = db.IntegerProperty(required = True)
 
 	@classmethod
 	def by_id(cls, uid):
@@ -101,7 +101,7 @@ class User(db.Model):
 
 	@classmethod
 	def register(cls, username, pw, isProf, email = None):
-		pw_hash = make_pw_hash(name, pw)
+		pw_hash = make_pw_hash(username, pw)
 		return User(parent = users_key(),
 					username = username,
 					pw_hash = pw_hash,
@@ -163,8 +163,8 @@ class Mark(db.Model):
 
 def checkLogin(handler): ##incomplete#########################
 	if handler.user:
-		user_id = int(user)
-		isProf = user.isProf
+		user_id = handler.user.key().id()
+		isProf = handler.user.isProf
 		return [user_id, isProf]
 
 def LogIn(handler, username, password): ##incomplete#########################
@@ -177,11 +177,11 @@ def LogIn(handler, username, password): ##incomplete#########################
 
 
 def existUser(username):
-	res = db.gql("SELECT * FROM User WHERE username = '%(username)s'"%{"username": username})
+	res = db.GqlQuery("SELECT * FROM User WHERE username = '%(username)s'"%{"username": username})
 	return bool(list(res))
 
 def checkGroup(name):
-	res = db.gql("SELECT * FROM Group WHERE name = '%s'"%(name))
+	res = db.GqlQuery("SELECT * FROM Group WHERE name = '%s'"%(name))
 	return bool(list(res))
 
 def checkAdmin(user_id, group_id):
@@ -189,11 +189,11 @@ def checkAdmin(user_id, group_id):
 	return group.admin == user_id
 
 def checkLabel(label, group_id):
-	res = db.gql("SELECT * FROM Question WHERE label = '%(label)s' AND group_id = %(group_id)s"%({"label": label, "group_id":group_id}))
+	res = db.GqlQuery("SELECT * FROM Question WHERE label = '%(label)s' AND group_id = %(group_id)s"%({"label": label, "group_id":group_id}))
 	return bool(list(res))
 
 def checkMark(user_id, question_id):
-	mark = db.gql("SELECT * FROM Mark WHERE user_id = %(user_id)s AND question_id = %(question_id)s" %({"user_id": user_id, "question_id": question_id}))
+	mark = db.GqlQuery("SELECT * FROM Mark WHERE user_id = %(user_id)s AND question_id = %(question_id)s" %({"user_id": user_id, "question_id": question_id}))
 	return bool(list(mark))
 
 
@@ -203,32 +203,28 @@ def checkMark(user_id, question_id):
 
 class Home(LoginHandler):## missing templates in get request
 	def get(self):
-		res = checkLogin()
+		res = checkLogin(self)
 		if res:
 			if res[1]:
-				query = db.gql("SELECT * FROM Group WHERE admin = %s"%(res[0]))
+				query = db.GqlQuery("SELECT * FROM Group WHERE admin = %s"%(res[0]))
 				groups = [(g.name, g.group_id) for g in query]
 				#return "PROFPAGE(groups)"
-				self.render('home.html', groups)
+				self.render('home.html', groups=groups)
 			else:
-				subs = db.gql("SELECT * FROM Subscription WHERE user_id = %s"%(res[0]))
+				subs = db.GqlQuery("SELECT * FROM Subscription WHERE user_id = %s"%(res[0]))
 				query = []
 				for s in subs:
 					query.append(Group.by_id(s.group_id))
 				groups = [(g.name, g.group_id) for g in query]
 				#return "ALUNOPAGE(groups)"
-				self.render('home.html', groups)
+				self.render('home.html', groups=groups)
 		else:
 			#return "LOGINPAGE"
 			self.render('login.html')
 
 	def post(self):
-		self.response.headers['Content-Type'] = 'application/json'
 		action = self.request.get('action')
-		if action == 'logout':
-			self.logout()
-			self.response.write(json.dumps({"status":True, "redirect": True}))
-		else:
+		if action == "Login":
 			username = self.request.get('username')
 			password = self.request.get('password')
 			if not username or not password:
@@ -236,12 +232,10 @@ class Home(LoginHandler):## missing templates in get request
 	
 			res = LogIn(username, password)
 	
-			if res:
-				self.response.write(json.dumps({"status":True}))
-				#return "REFRESH"
-			else:
-				self.response.write(json.dumps({"status":False}))
-				#return "LOGINPAGE+ERRO" 
+			self.redirect('/') 
+		else:
+			self.logout()
+			self.redirect('/')
 
 class Register(LoginHandler):## missing templates in get request
 	def get(self):
@@ -250,29 +244,33 @@ class Register(LoginHandler):## missing templates in get request
 	def post(self):
 		username = self.request.get('username')
 		password = self.request.get('password')
-		isProf = bool(self.request.get('isProf'))
-		self.response.headers['Content-Type'] = 'application/json'
+		isProf = self.request.get('isProf')
+
+		if isProf == "isProf":
+			isProf = 1
+		else:
+			isProf = 0
 
 		if not username or not password:
 			return
 
+
 		if existUser(username):
-			self.response.write(json.dumps({"status": False}))
+			self.render("register.html")
 		else:
-			##change password for hash
-			u = User.register(username, password, email = "", isProf)
+			u = User.register(username, password, isProf, email = "")
 			u.put()
 			self.login(u)
 			print "new user: " + str(username) + ("(prof)" if isProf else "")
-			self.response.write(json.dumps({"status": True})) 
+			self.redirect("/")
 
 class ShowGroup(LoginHandler):## missing templates in get request
 	def get(self):
-		res = checkLogin()
+		res = checkLogin(self)
 		if res:
 			if res[1]:
 				group_id = int(self.request.get("group_id"))
-				questions = ndb.gql("SELECT * FROM Question WHERE group_id = %(group_id)s"%{"group_id": group_id})
+				questions = db.GqlQuery("SELECT * FROM Question WHERE group_id = %(group_id)s"%{"group_id": group_id})
 				questions= [{"label" : q.label, "question_id": q.key().id()} for q in questions]
 
 				group = Group.by_id(group_id)
@@ -296,7 +294,7 @@ class ShowGroup(LoginHandler):## missing templates in get request
 class AddGroup(LoginHandler): ## missing templates in get request
 
 	def get(self):
-		res = checkLogin()
+		res = checkLogin(self)
 		if res:
 			if res[1]:
 				return "ADD GROUP FORM PAGE"
@@ -307,7 +305,7 @@ class AddGroup(LoginHandler): ## missing templates in get request
 			return "LOGINPAGE"
 
 	def post(self):
-		res = checkLogin()
+		res = checkLogin(self)
 		self.response.headers['Content-Type'] = 'application/json'
 		if res:
 			if res[1]:
@@ -332,7 +330,7 @@ class AddGroup(LoginHandler): ## missing templates in get request
 
 class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 	def get(self):
-		res = checkLogin()
+		res = checkLogin(self)
 		if res:
 			if res[1]:
 				group_id = int(self.request.get("group_id"))
@@ -351,7 +349,7 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 			return "LOGINPAGE"
 
 	def post(self):
-		res = checkLogin()
+		res = checkLogin(self)
 		self.response.headers['Content-Type'] = 'application/json'
 		if res:
 			if res[1]:
@@ -390,7 +388,7 @@ class AddQuestion(webapp2.RequestHandler):## missing templates in get request
 
 class EnterGroup(webapp2.RequestHandler): ##missing templates in get request
 	def get(self):
-		res = checkLogin()
+		res = checkLogin(self)
 		if res:
 			if res[1]:
 				self.error(401)
@@ -401,13 +399,13 @@ class EnterGroup(webapp2.RequestHandler): ##missing templates in get request
 			return "LOGINPAGE"
 
 	def post(self):
-		res = checkLogin()
+		res = checkLogin(self)
 		self.response.headers['Content-Type'] = 'application/json'
 		if res:
 			name = self.request.get("name")
-			group = db.gql("SELECT * FROM Group WHERE name = '%s'"%(name)).get()
+			group = db.GqlQuery("SELECT * FROM Group WHERE name = '%s'"%(name)).get()
 			if group:
-				new_sub = Subscription(group_id=group.group_id, user_id=res[0])
+				new_sub = Subscription(group_id=group.key().id(), user_id=res[0])
 				new_sub.put()
 				self.response.write(json.dumps({"status": True}))
 				#return "TRUE GO BACK"
@@ -420,10 +418,11 @@ class EnterGroup(webapp2.RequestHandler): ##missing templates in get request
 
 class ShowQuestion(webapp2.RequestHandler): ##incomplete
 	def get(self):
-		res = checkLogin()
+		res = checkLogin(self)
 		if res:
 			question_id = int(self.request.get("question_id"))
 			question = Question.by_id(question_id)
+
 			if res[1]:
 				return "SHOW QUESTION(question)(button = [start, stop, STATISTICS])"
 			else:
@@ -440,7 +439,7 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 			return "LOGINPAGE"
 
 	def post(self):
-		res = checkLogin()
+		res = checkLogin(self)
 		self.response.headers['Content-Type'] = 'application/json'
 		if res:
 			question_id = int(self.request.get("question_id"))
@@ -474,13 +473,9 @@ class ShowQuestion(webapp2.RequestHandler): ##incomplete
 
 
 ## Main
-
-if __name__ == '__main__':
-	application = webapp2.WSGIApplication([
-	('/', Home),
+app = webapp2.WSGIApplication([('/', Home),
 	('/register', Register),
 	('/add', AddGroup),
 	('/enter', EnterGroup),
 	('/group', ShowGroup),
-	('/question', ShowQuestion)
-	], debug=True)
+	('/question', ShowQuestion)], debug=True)

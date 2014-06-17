@@ -248,11 +248,12 @@ class ShowGroup(LoginHandler):## missing templates in get request
 			if res[1]:
 				group_id = int(self.request.get("group_id"))
 				questions = ndb.gql("SELECT * FROM Question WHERE group_id = %(group_id)s"%{"group_id": group_id})
-				questions= [{"question_id": q.key().id(), "content": q.content, "label" : q.label, "answers":q.answers} for q in questions]
+				questions= [{"label" : q.label, "question_id": q.key().id()} for q in questions]
 				group = Group.by_id(group_id)
 				description = group.description
+				name = group.name
 				if checkAdmin(res[0], group_id):
-					return "ADD QUESTION FORM PAGE (description, questions)"
+					return "ADD QUESTION FORM PAGE (name, description, questions)"
 				else:
 					self.error(401)
 					#return "GROUP BELONGS TO OTHER USER"

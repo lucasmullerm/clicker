@@ -38,10 +38,12 @@
     {% endif %}
     {% if isProf and status == 2 %}
         Número de Respostas: {{ra + rb + rc + rd}}<br>
-        {% if answer == 0 %}<b>{% endif %}A: {{ra}} ({{ra/(ra + rb + rc + rd)}}){% if answer == 0 %}</b>{% endif %}<br>
-        {% if answer == 1 %}<b>{% endif %}B: {{rb}} ({{rb/(ra + rb + rc + rd)}}){% if answer == 1 %}</b>{% endif %}<br>
-        {% if answer == 2 %}<b>{% endif %}C: {{rc}} ({{rc/(ra + rb + rc + rd)}}){% if answer == 2 %}</b>{% endif %}<br>
-        {% if answer == 3 %}<b>{% endif %}D: {{rd}} ({{rd/(ra + rb + rc + rd)}}){% if answer == 3 %}</b>{% endif %}<br>
+        {% if (ra + rb + rc + rd) > 0 %}
+            {% if answer == 0 %}<b>{% endif %}A: {{ra}} ({{ra/(ra + rb + rc + rd)}}){% if answer == 0 %}</b>{% endif %}<br>
+            {% if answer == 1 %}<b>{% endif %}B: {{rb}} ({{rb/(ra + rb + rc + rd)}}){% if answer == 1 %}</b>{% endif %}<br>
+            {% if answer == 2 %}<b>{% endif %}C: {{rc}} ({{rc/(ra + rb + rc + rd)}}){% if answer == 2 %}</b>{% endif %}<br>
+            {% if answer == 3 %}<b>{% endif %}D: {{rd}} ({{rd/(ra + rb + rc + rd)}}){% if answer == 3 %}</b>{% endif %}<br>
+        {% endif %}
     {% endif %}
 </form>
     <a id="back" href="/"> 

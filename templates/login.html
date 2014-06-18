@@ -1,20 +1,30 @@
 <!DOCTYPE html>
 <html lang="pt-br">
     <head>
+        <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<style type="text/css">
+    .cel{
+        height:180px;
+        width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        font-size: 100px;
+        font-family: "Comic Sans MS";
+        font-weight:bold;
+    }
+</style>
         <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
         <title>Login</title>
-        <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     </head>       
     <body>
     <form name="login" id="loginform" method="post">
-      <div class="form-group">
-          <input type="text" name="username" id="username" class="form-control input-lg" placeholder="Usuário" tabindex="1">
-      </div>
-      <div class="form-group">
-          <input type="password" name="password" id="password" class="form-control input-lg" placeholder="Senha" tabindex="2">
-      </div>
-      <input type="submit" class="btn btn-success btn-block btn-lg" name="action" value="Login"></input>
-      <a href="register" class="btn btn-primary btn-block btn-lg" >Registrar</a>
+          <input type="text" name="username" id="username" class="cel" placeholder="Usuário" tabindex="1">
+     
+          <input type="password" name="password" id="password" class="cel" placeholder="Senha" tabindex="2">
+      
+      <input type="submit" class="cel btn btn-success" name="action" value="Login"></input>
+      <a href="register" class="cel btn btn-primary" >Registrar</a>
       <p id="error"></p>
 
     </form>

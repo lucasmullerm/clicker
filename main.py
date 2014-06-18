@@ -420,7 +420,8 @@ class EnterGroup(LoginHandler): ##missing templates in get request
 				#return "PAGE FOR STUDENTS"
 			else:
 				query = db.GqlQuery("SELECT * FROM Group")
-				groups = [(g.name, g.key().id()) for g in query]
+				groups = [(g.name, g.key().id()) for g in query if not bool(list(db.GqlQuery("SELECT * FROM Subscription WHERE user_id = %(group_id)% AND group_id = %(group_id)s"%({"user_id":res[0], "group_id":g.key().id()}))))]
+
 				self.render('get_group.html', groups=groups)
 				#return "FORM FOR INPUT GROUP NAME"
 		else:

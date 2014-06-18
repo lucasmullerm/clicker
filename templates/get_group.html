@@ -1,31 +1,30 @@
 
 <!DOCTYPE html>
 <html><head>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-
-    <script>
-    
-    logOut = function(){
-        $.ajax({ 
-            type: POST,
-            url: "",
-            data: {'action': 'logout'},
-            success: function (data){
-                window.location = "http:/clickerhum.appspot.com/"
-            }
-        })  
+        <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<style type="text/css">
+    .cel{
+        height:180px;
+        width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        font-size: 100px;
+        font-family: "Comic Sans MS";
+        font-weight:bold;
     }
-    </script>
+</style>
 </head>
 <body>
+    <a class="cel btn btn-primary">Grupos</a>
     {% for group in groups %}
     <form method="post">
-        <input name="name" type="submit" id="{{group[1]}}" href="/group?group_id={{group[1]}}" value="{{group[0]}}">
+        <input name="name" type="submit" id="{{group[1]}}" href="/group?group_id={{group[1]}}" value="{{group[0]}}" class="cel btn btn-success">
         <input name="group_id" type="hidden" value="{{group[1]}}">
         <br>
     </form>
     {% endfor %}
-    <a id="back" href="/"> 
+    <a id="back" href="/" class="cel btn btn-warning"> 
         Voltar
     </a>
 </body>

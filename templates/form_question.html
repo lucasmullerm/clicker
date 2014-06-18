@@ -1,6 +1,23 @@
 
 <html>
-<head>
+<head>        <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<style type="text/css">
+    .cel{
+        height:180px;
+        width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        font-size: 100px;
+        font-family: "Comic Sans MS";
+        font-weight:bold;
+    }
+    input[type=radio] {
+    border: 0px;
+    width: 180px;
+    height: 180px;
+}
+</style>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script>
     logOut = function(){
@@ -16,18 +33,19 @@
     </script>
 </head>
 <body>
-	<b>Questão</b>
+	<a class="cel btn btn-primary">Nova Questão</a>
 	<form id="form" method="post">
-   		Titulo: <input type="text" name="label"><br>
-   		Enunciado: <textarea  name="content"></textarea><br>
+   		<input type="text" name="label" value="Título" class="cel"><br>
+   		<textarea  name="content" class="cel" style="font-size:50px;font-weight:normal;">Enunciado</textarea><br>
    		<input type="hidden" name="group_id" value="{{group_id}}">
-   		<input type="radio" name="answer" value="0" checked>Opção A: <input type="text" name="a"><br>
-   		<input type="radio" name="answer" value="1">Opção B: <input type="text" name="b"><br>
-   		<input type="radio" name="answer" value="2">Opção C: <input type="text" name="c"><br>
-   		<input type="radio" name="answer" value="3">Opção D: <input type="text" name="d"><br>
-    	<input type="submit" value="Enviar">
+   		<div class="display:block;"><input type="radio" name="answer" value="0" checked style="display: inline;"> <input type="text" name="a" value="A..." class="cel" style="width:720px;align:right;display: inline;"></div><br>
+   		<div class="display:block;"><input type="radio" name="answer" value="1" style="display: inline;"> <input type="text" name="b" value="B..." class="cel" style="width:720px;align:right;display: inline;"></div><br>
+   		<div class="display:block;"><input type="radio" name="answer" value="2" style="display: inline;"> <input type="text" name="c" value="C..." class="cel" style="width:720px;align:right;display: inline;"></div><br>
+   		<div class="display:block;"><input type="radio" name="answer" value="3" style="display: inline;"> <input type="text" name="d" value="D..." class="cel" style="width:720px;align:right;display: inline;"></div><br>
+
+    	<input type="submit" value="Enviar" class="cel btn btn-success">
 	</form>
-    <a id="back" href="/"> 
+    <a id="back" href="/" class="cel btn btn-danger"> 
         Voltar
     </a>
 </body>

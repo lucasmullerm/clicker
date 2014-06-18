@@ -1,6 +1,18 @@
 
 <html>
-<head>
+<head>        <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<style type="text/css">
+    .cel{
+        height:180px;
+        width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        font-size: 100px;
+        font-family: "Comic Sans MS";
+        font-weight:bold;
+    }
+</style>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script>
     logOut = function(){
@@ -16,37 +28,37 @@
     </script>
 </head>
 <body>
-	<b>{{ label }}</b><br>
-	{{content}}<br>
+	<a class="cel btn btn-primary">{{ label }}</a>
+    <a class="cel btn-info" style="font-size:50px;font-weight:normal;">{{ content }}</a> <br>
     <form method="post">
     {% if status == 1 and isProf == 0 and done == 0 %}
-    <input type="submit" name="a" value="{{a}}"><br>
-    <input type="submit" name="b" value="{{b}}"><br> 
-    <input type="submit" name="c" value="{{c}}"><br> 
-    <input type="submit" name="d" value="{{d}}"><br> 
+    <input type="submit" name="a" value="{{a}}" class="cel btn btn-success"><br>
+    <input type="submit" name="b" value="{{b}}" class="cel btn btn-success"><br> 
+    <input type="submit" name="c" value="{{c}}" class="cel btn btn-success"><br> 
+    <input type="submit" name="d" value="{{d}}" class="cel btn btn-success"><br> 
     {% else %}
-    {{a}}<br>
-    {{b}}<br>
-    {{c}}<br>
-    {{d}}<br>
+    <a class="cel btn btn-inverse">A: {{a}}</a><br>
+    <a class="cel btn btn-inverse">B: {{b}}</a><br>
+    <a class="cel btn btn-inverse">C: {{c}}</a><br>
+    <a class="cel btn btn-inverse">D: {{d}}</a><br>
     {% endif %}
     {% if isProf and status == 0 %}
-        <input type="submit" name="enviar" value="Enviar">
+        <input type="submit" name="enviar" value="Enviar" class="cel btn btn-success">
     {% endif %}
     {% if isProf and status == 1 %}
-        <input type="submit" name="fechar" value="Fechar">
+        <input type="submit" name="fechar" value="Fechar" class="cel btn btn-danger">
     {% endif %}
     {% if isProf and status == 2 %}
-        Número de Respostas: {{ra + rb + rc + rd}}<br>
+        <a class="cel btn btn-success">Respostas: {{ra + rb + rc + rd}}</a><br>
         {% if (ra + rb + rc + rd) > 0 %}
-            {% if answer == 0 %}<b>{% endif %}A: {{ra}} ({{100*ra/(ra + rb + rc + rd)}} %){% if answer == 0 %}</b>{% endif %}<br>
-            {% if answer == 1 %}<b>{% endif %}B: {{rb}} ({{100*rb/(ra + rb + rc + rd)}} %){% if answer == 1 %}</b>{% endif %}<br>
-            {% if answer == 2 %}<b>{% endif %}C: {{rc}} ({{100*rc/(ra + rb + rc + rd)}} %){% if answer == 2 %}</b>{% endif %}<br>
-            {% if answer == 3 %}<b>{% endif %}D: {{rd}} ({{100*rd/(ra + rb + rc + rd)}} %){% if answer == 3 %}</b>{% endif %}<br>
+            <a class="cel btn">{% if answer == 0 %}<b>{% endif %}A: {{ra}} ({{100*ra/(ra + rb + rc + rd)}} %){% if answer == 0 %}</b>{% endif %}</a><br>
+            <a class="cel btn">{% if answer == 1 %}<b>{% endif %}B: {{rb}} ({{100*rb/(ra + rb + rc + rd)}} %){% if answer == 1 %}</b>{% endif %}</a><br>
+            <a class="cel btn">{% if answer == 2 %}<b>{% endif %}C: {{rc}} ({{100*rc/(ra + rb + rc + rd)}} %){% if answer == 2 %}</b>{% endif %}</a><br>
+            <a class="cel btn">{% if answer == 3 %}<b>{% endif %}D: {{rd}} ({{100*rd/(ra + rb + rc + rd)}} %){% if answer == 3 %}</b>{% endif %}</a><br>
         {% endif %}
     {% endif %}
     </form>
-    <a id="back" href="/"> 
+    <a id="back" href="/" class="cel btn btn-danger"> 
         Voltar
     </a>
 </body>

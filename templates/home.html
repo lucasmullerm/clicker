@@ -2,6 +2,19 @@
 <!DOCTYPE html>
 <html><head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<style type="text/css">
+    .cel{
+        height:180px;
+        width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        font-size: 100px;
+        font-family: "Comic Sans MS";
+        font-weight:bold;
+    }
+</style>
 
     <script>
     
@@ -19,23 +32,23 @@
 </head>
 <body>
     {% if isProf %}
-    <a name="criar_grupo" href="/add">
+    <a name="criar_grupo" href="/add" class="cel btn btn-primary">
         Criar Grupo
     </a><br>
     {% endif %}
     {% if isProf == 0 %}
-    <a name="entrar_grupo" href="/enter">
+    <a name="entrar_grupo" href="/enter" class="cel btn btn-primary">
         Entrar em Grupo
     </a><br>
     {% endif %}
     {% for group in groups %}
-        <a id="{{group[1]}}" href="/group?group_id={{group[1]}}">
+        <a id="{{group[1]}}" href="/group?group_id={{group[1]}}" class="cel btn btn-success">
             {{ group[0] }}
         </a>
         <br>
     {% endfor %}
     <form method="post">
-    <input id="logout" url="" name="action" type="submit" value="Sair"> 
+    <input id="logout" url="" name="action" type="submit" value="Sair" class="cel btn btn-danger "> 
     </input>
     </form>
 </body>

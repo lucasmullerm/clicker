@@ -2,6 +2,19 @@
 <!DOCTYPE html>
 <html>
 <head>
+        <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<style type="text/css">
+    .cel{
+        height:180px;
+        width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        font-size: 100px;
+        font-family: "Comic Sans MS";
+        font-weight:bold;
+    }
+</style>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script>
     logOut = function(){
@@ -17,13 +30,13 @@
     </script>
 </head>
 <body>
-	<b>Grupo</b>
+    <a class="cel btn btn-primary">Novo Grupo</a>
 	<form id="form" method="post">
-   		Nome: <input type="text" name="name"><br>
-   		Descrição: <textarea name="description"></textarea><br>
-    	<input type="submit" value="Enviar">
+   		<input type="text" name="name" value="Nome" class="cel"><br>
+   		<textarea name="description" class="cel" style="font-size:50px;font-weight:normal">Descrição...</textarea><br>
+    	<input type="submit" value="Enviar" class="cel btn btn-success">
 	</form>
-    <a id="back" href="/"> 
+    <a id="back" href="/" class="cel btn btn-danger"> 
         Voltar
     </a>
 </body>

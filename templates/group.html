@@ -4,6 +4,19 @@
 <head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
+        <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<style type="text/css">
+    .cel{
+        height:180px;
+        width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        font-size: 100px;
+        font-family: "Comic Sans MS";
+        font-weight:bold;
+    }
+</style>
     <script>
     
     logOut = function(){
@@ -17,21 +30,21 @@
         })	
     }
     </script>
-    <b>{{ name }}</b><br>
+    <a class="cel btn btn-primary">{{ name }}</a>
 </head>
 <body>
-    {{ description }} <br>
+    <a class="cel btn-info" style="font-size:50px;font-weight:normal;">{{ description }}</a> <br>
     {% if isProf %}
-    <a name="criar_questao" href="/addQuestion?group_id={{group_id}}">
+    <a name="criar_questao" href="/addQuestion?group_id={{group_id}}" class="cel btn btn-warning">
         Adicionar Questão
     </a><br><br>
     {% endif %}
     {% for question in questions %}
-        <a id={{ question[1] }} href="/question?question_id={{question[1]}}">
+        <a id={{ question[1] }} href="/question?question_id={{question[1]}}" class="cel btn btn-success">
             {{ question[0] }}
-        </a><br>
+        </a><br><br><br>
     {% endfor %}
-    <a id="logout" href="/"> 
+    <a id="logout" href="/" class="cel btn btn-danger"> 
         Voltar
     </a>
 </body>
